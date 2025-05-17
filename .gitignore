@@ -91,3 +91,41 @@ logs
 coverage/
 *.lcov
 .nyc_output/
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+*.priv
+*credential*
+*secret*
+*password*
+*token*
+*auth*config*
+google-services.json
+GoogleService-Info.plist
+firebase*.json
+*.jks
+*.keystore
+!debug.keystore
+
+# Config that might contain secrets
+config.private.*
+*.private.*
+*secrets*
+*credentials*
+
+# Temporary files
+*.swp
+*.tmp
+*.temp
+*.bak
+*~
+
+# Personal files
+TODO.md
+NOTES.md
