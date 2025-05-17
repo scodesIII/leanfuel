@@ -86,3 +86,8 @@ local.properties
 # Log files
 logs
 *.log
+
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output/
