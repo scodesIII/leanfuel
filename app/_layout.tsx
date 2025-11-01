@@ -61,8 +61,8 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         {/* <GluestackUIProvider> */}
         <Stack screenOptions={{ headerShown: false, animation: 'fade_from_bottom' }}>
-          {/* <Stack.Screen name="index" options={{ headerTitle: "Home", gestureEnabled: false }} /> */}
-          {/* <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_right' }} /> */}
+          <Stack.Screen name="index" options={{ headerTitle: "Home", gestureEnabled: false }} />
+          <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
         </Stack>
         <StatusBar style="auto" />
