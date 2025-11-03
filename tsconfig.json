@@ -9,9 +9,7 @@
       "@testing-library/jest-native",
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ],
+      "@/*": ["./*"],
       "tailwind.config": [
         "./tailwind.config.js"
       ]
