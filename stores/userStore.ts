@@ -69,12 +69,17 @@ export const useUserStore = create<UserState>((set, get) => ({
                 .eq('id', user.id)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching profiles:', error);
+                set({ profile: null });
+                return;
+            }
 
             set({ profile: data });
         } catch (error) {
             console.error('Error fetching profile:', error);
             set({ profile: null });
+            return;
         } finally {
             set({ isLoading: false });
         }
@@ -95,12 +100,15 @@ export const useUserStore = create<UserState>((set, get) => ({
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error updating profile:', error);
+                return;
+            }
 
             set({ profile: data });
         } catch (error) {
             console.error('Error updating profile:', error);
-            throw error;
+            return;
         } finally {
             set({ isLoading: false });
         }
