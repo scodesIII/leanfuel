@@ -9,6 +9,9 @@ import "../global.css"
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 
+import { useUserStore } from '@/stores/userStore';
+import { ActivityIndicator } from 'react-native';
+
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
@@ -22,6 +25,11 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [appIsReady, setAppIsReady] = useState(false);
+  const { initialize, isInitialized, isLoading } = useUserStore();
+
+    useEffect(() => {
+        initialize();
+    }, []);
 
   useEffect(() => {
     async function prepare() {

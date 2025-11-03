@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { useUserStore } from '@/stores/userStore';
 
 const Dashboard = () => {
   const backgroundColor = useThemeColor({}, 'background');
@@ -22,6 +23,12 @@ const Dashboard = () => {
 
   const caloriesRemaining = caloriesGoal - caloriesConsumed;
   const calorieProgress = (caloriesConsumed / caloriesGoal) * 100;
+
+  const profile = useUserStore((state) => state.profile);
+  const user = useUserStore((state) => state.user);
+
+  // Prefer display_name from profile, fallback to email
+    const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
 
   const macros = {
     carbs: { consumed: 125, goal: 250, color: '#fb923c' },
@@ -90,7 +97,7 @@ const Dashboard = () => {
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <ThemedView style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
-          <ThemedText style={{ fontSize: 24, fontWeight: 'bold' }}>Hi, Sarah! 👋</ThemedText>
+          <ThemedText style={{ fontSize: 24, fontWeight: 'bold' }}>Hi, { displayName }! 👋</ThemedText>
           <ThemedText style={{ opacity: 0.7, marginTop: 4 }}>Let's crush your goals today</ThemedText>
         </ThemedView>
 
