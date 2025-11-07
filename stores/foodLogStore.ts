@@ -116,3 +116,34 @@ export interface AddFoodLogInput {
     consumed_at?: string; // Optional, defaults to now
     notes?: string;
 }
+
+
+
+// ============================================================================
+// STEP 2: DEFINE STATE SHAPE (What data lives in the store?)
+// ============================================================================
+
+/**
+ * State is like the "memory" of your app
+ * Ask yourself: What data needs to be accessible across multiple screens?
+ */
+
+interface FoodLogActions {
+    // FETCH ACTIONS (Read from database)
+    // -------------------
+    fetchTodaysLogs: () => Promise<void>;
+    fetchTodaysSummary: () => Promise<void>;
+    fetchLogsForDate: () => Promise<void>;
+
+    // MUTATION ACTIONS (Write to database)
+    // ----------------
+    addLog: (input: AddFoodLogInput) => Promise<FoodLog | null>;
+    updateLog: (id: string, updates: Partial<AddFoodLogInput>) => Promise<void>;
+    deleteLog: (id: string) => Promise<void>;
+
+    // UI ACTIONS (Update UI state only)
+    // ----------
+    setSelectedDate: (date: string) => void;
+    clearError: () => void;
+    reset: () => void; // Clear all state (e.g., on logout)
+}
