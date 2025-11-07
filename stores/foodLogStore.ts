@@ -128,6 +128,24 @@ export interface AddFoodLogInput {
  * Ask yourself: What data needs to be accessible across multiple screens?
  */
 
+interface FoodLogState {
+    // DATA STATE
+    // ----------
+    todaysLogs: FoodLog[]; // All food logs for today
+    todaysSummary: DailyNutritionSummary | null; // Pre-calculated totals
+
+    // UI STATE
+    // --------
+    isLoading: boolean; // Show loading spinners
+    error: string | null; // Show error messages
+
+    // CACHE STATE (Optional but useful)
+    // -----------
+    lastFetchTime: number; // When did we last fetch? (for caching)
+    selectedDate: string; // Which date are we viewing? (defaults to today)
+}
+
+
 interface FoodLogActions {
     // FETCH ACTIONS (Read from database)
     // -------------------
