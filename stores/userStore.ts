@@ -19,6 +19,7 @@ export interface UserProfile {
     profile_completed: boolean;
     created_at: string;
     updated_at: string;
+    last_login: string;
 }
 
 interface UserState {
