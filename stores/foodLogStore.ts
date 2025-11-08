@@ -240,7 +240,36 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             });
         }
     },
-    fetchTodaysSummary: async () => {},
+
+    /**
+     * fetchTodaysSummary - Get pre-calculated daily totals
+     *
+     * Why separate from logs?
+     * - Summary is faster to fetch (1 row vs many)
+     * - Can show dashboard quickly while logs load
+     */
+    fetchTodaysSummary: async () => {
+        set({ isLoading: true, error: null });
+
+        try {
+            // Option 1: Use the helper function (recommended)
+            const { data, error } = await supabase.rpc('get_todays_nutrition');
+
+            if (error) throw error;
+
+            set({
+                todaysSummary: data && data.length > 0 ? data[0] : null,
+                isLoading: false,
+            });
+        } catch (error)
+        {
+            console.error('Error fetching summary:', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to fetch summary',
+                isLoading: false,
+            });
+        }
+    },
     fetchLogsForDate: async () => {},
     addLog: async (input: AddFoodLogInput) => {},
     updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {},
