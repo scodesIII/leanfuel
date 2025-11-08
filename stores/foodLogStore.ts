@@ -187,7 +187,21 @@ const initialState: FoodLogState = {
 export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     ...initialState,
 
-    fetchTodaysLogs: async () => {},
+    fetchTodaysLogs: async () => {
+        // Get current state to check if we need to refetch
+        const state = get();
+        const now = Date.now();
+        const CACHE_DURATION = 30 * 1000; // 30 seconds
+
+        // OPTIMIZATION: Skip fetch if data is fresh (caching)
+        if(
+            state.todaysLogs.length > 0 &&
+            now - state.lastFetchTime < CACHE_DURATION
+        ) {
+            console.log('Using cached data')
+            return;
+        }
+    },
     fetchTodaysSummary: async () => {},
     fetchLogsForDate: async () => {},
     addLog: async (input: AddFoodLogInput) => {},
