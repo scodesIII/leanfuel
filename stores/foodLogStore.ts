@@ -201,6 +201,30 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             console.log('Using cached data')
             return;
         }
+
+        // Step 1: Set loading state
+        set({ isLoading: true, error: null });
+
+        try {
+            // Step 2: Fetch from Supabase
+            const today = new Date().toISOString().split('T')[0];
+
+            const { data, error } = await supabase
+                .from('food_logs')
+                .select(`
+                    *,
+                    food_item: food_items(
+                        id,
+                        name,
+                        brand,
+                        image_url
+                        )
+                `)
+                .eq('date_logged', today)
+                .order('consumed_at', { ascending: false });
+
+            if (error) throw  error;
+        }
     },
     fetchTodaysSummary: async () => {},
     fetchLogsForDate: async () => {},
