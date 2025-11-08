@@ -165,3 +165,6 @@ interface FoodLogActions {
     clearError: () => void;
     reset: () => void; // Clear all state (e.g., on logout)
 }
+
+// Combine state + actions into one type
+type FoodLogStore = FoodLogState & FoodLogActions;
