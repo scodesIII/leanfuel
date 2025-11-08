@@ -182,3 +182,15 @@ const initialState: FoodLogState = {
     lastFetchTime: 0,
     selectedDate: new Date().toISOString().split('T')[0], // Today's date
 };
+
+
+export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
+    ...initialState,
+
+    fetchTodaysLogs: async () => {},
+    fetchTodaysSummary: async () => {},
+    fetchLogsForDate: async () => {},
+    addLog: async (input: AddFoodLogInput) => {},
+    updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {},
+    deleteLog: async (id: string) => {},
+});
