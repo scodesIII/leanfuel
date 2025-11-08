@@ -309,7 +309,172 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         }
     },
 
-    addLog: async (input: AddFoodLogInput) => {},
-    updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {},
-    deleteLog: async (id: string) => {},
-});
+
+    // ============================================================================
+    // MUTATION ACTIONS
+    // ============================================================================
+
+    /**
+     * addLog - Create a new food log
+     *
+     * Pattern for mutations:
+     * 1. Optimistic update (update UI immediately)
+     * 2. Send to database
+     * 3. On success: Update with real data
+     * 4. On error: Rollback optimistic update
+     */
+
+    addLog: async (input: AddFoodLogInput) => {
+        const state = get();
+        set({ isLoading: true, error: null });
+
+        try {
+            // Prepare the data
+            const logData = {
+                food_item_id: input.food_item_id,
+                meal_type: input.meal_type,
+                servings: input.servings,
+                serving_size_override: input.serving_size_override,
+                serving_unit_override: input.serving_unit_override,
+                calories: input.calories,
+                protein_g: input.protein_g,
+                carbs_g: input.carbs_g,
+                fat_g: input.fat_g,
+                fiber_g: input.fiber_g || 0,
+                sugar_g: input.sugar_g || 0,
+                sodium_mg: input.sodium_mg || 0,
+                consumed_at: input.consumed_at || new Date().toISOString(),
+                notes: input.notes,
+            };
+
+            // Insert into database
+            const { data, error } = await supabase
+                .from('food_logs')
+                .insert(logData)
+                .select(`
+          *,
+          food_item:food_items (
+            id,
+            name,
+            brand,
+            image_url
+          )
+        `)
+                .single();
+
+            if (error) throw error;
+
+            // Update state with the new log
+            // Add to beginning of array (newest first)
+            set({
+                todaysLogs: [data, ...state.todaysLogs],
+                isLoading: false,
+            });
+
+            // Refetch summary (trigger auto-updated it, but let's get fresh data)
+            await get().fetchTodaysSummary();
+
+            return data;
+        } catch (error) {
+            console.error('Error adding log:', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to add log',
+                isLoading: false,
+            });
+            return null;
+        }
+    },
+
+    /**
+     * updateLog - Edit an existing log
+     */
+    updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {
+        const state = get();
+        set({ isLoading: true, error: null });
+
+        try {
+            const { data, error } = await supabase
+                .from('food_logs')
+                .update(updates)
+                .eq('id', id)
+                .select(`
+          *,
+          food_item:food_items (
+            id,
+            name,
+            brand,
+            image_url
+          )
+        `)
+                .single();
+
+            if (error) throw error;
+
+            // Update the log in the array
+            set({
+                todaysLogs: state.todaysLogs.map((log) =>
+                    log.id === id ? data : log
+                ),
+                isLoading: false,
+            });
+
+            // Refetch summary
+            await get().fetchTodaysSummary();
+        } catch (error) {
+            console.error('Error updating log:', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to update log',
+                isLoading: false,
+            });
+        }
+    },
+    /**
+     * deleteLog - Remove a food log
+     */
+    deleteLog: async (id: string) => {
+        const state = get();
+        set({ isLoading: true, error: null });
+
+        try {
+            const { error } = await supabase
+                .from('food_logs')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Remove from state
+            set({
+                todaysLogs: state.todaysLogs.filter((log) => log.id !== id),
+                isLoading: false,
+            });
+
+            // Refetch summary
+            await get().fetchTodaysSummary();
+        } catch (error) {
+            console.error('Error deleting log:', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to delete log',
+                isLoading: false,
+            });
+        }
+    },
+
+    // ============================================================================
+    // UI ACTIONS
+    // ============================================================================
+
+    setSelectedDate: (date: string) => {
+        set({ selectedDate: date });
+        // Automatically fetch logs for the new date
+        get().fetchLogsForDate(date);
+    },
+
+    clearError: () => {
+        set({ error: null });
+    },
+
+    reset: () => {
+        set(initialState);
+    },
+}));
