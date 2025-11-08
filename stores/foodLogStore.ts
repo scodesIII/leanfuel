@@ -1,5 +1,6 @@
 import  { create } from 'zustand';
 import  { supabase} from "@/lib/superbase";
+import {falseTag} from "yaml/dist/schema/yaml-1.1/bool";
 
 // ============================================================================
 // STEP 1: DEFINE TYPES (What data structures do we need)
@@ -224,6 +225,13 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 .order('consumed_at', { ascending: false });
 
             if (error) throw  error;
+
+            // Step 3: Update state with fetched data
+            set({
+                todaysLogs: data || [],
+                lastFetchTime: now,
+                isLoading: false
+            });
         }
     },
     fetchTodaysSummary: async () => {},
