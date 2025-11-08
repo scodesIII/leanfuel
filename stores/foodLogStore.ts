@@ -232,6 +232,12 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 lastFetchTime: now,
                 isLoading: false
             });
+        } catch (error) {
+            console.error('Error fetching logs', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to fetch logs',
+                isLoading: false,
+            });
         }
     },
     fetchTodaysSummary: async () => {},
