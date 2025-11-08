@@ -152,7 +152,7 @@ interface FoodLogActions {
     // -------------------
     fetchTodaysLogs: () => Promise<void>;
     fetchTodaysSummary: () => Promise<void>;
-    fetchLogsForDate: () => Promise<void>;
+    fetchLogsForDate: (date: string) => Promise<void>;
 
     // MUTATION ACTIONS (Write to database)
     // ----------------
@@ -270,7 +270,45 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             });
         }
     },
-    fetchLogsForDate: async () => {},
+
+    /**
+     * fetchLogsForDate - Get logs for any date
+     *
+     * Use case: User browses history
+     */
+    fetchLogsForDate: async (date: string) => {
+        set({ isLoading: true, error: null, selectedDate: date });
+
+        try {
+            const { data, error } = await supabase
+                .from('food_logs')
+                .select(`
+          *,
+          food_item:food_items (
+            id,
+            name,
+            brand,
+            image_url
+          )
+        `)
+                .eq('date_logged', date)
+                .order('consumed_at', { ascending: false });
+
+            if (error) throw error;
+
+            set({
+                todaysLogs: data || [],
+                isLoading: false,
+            });
+        } catch (error) {
+            console.error('Error fetching logs for date:', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to fetch logs',
+                isLoading: false,
+            });
+        }
+    },
+
     addLog: async (input: AddFoodLogInput) => {},
     updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {},
     deleteLog: async (id: string) => {},
