@@ -168,3 +168,17 @@ interface FoodLogActions {
 
 // Combine state + actions into one type
 type FoodLogStore = FoodLogState & FoodLogActions;
+
+
+// ============================================================================
+// STEP 4: CREATE THE STORE (zustand)
+// ============================================================================
+
+const initialState: FoodLogState = {
+    todaysLogs: [],
+    todaysSummary: null,
+    isLoading: false,
+    error: null,
+    lastFetchTime: 0,
+    selectedDate: new Date().toISOString().split('T')[0], // Today's date
+};
