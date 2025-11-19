@@ -14,22 +14,22 @@ export interface OnboardingData {
 
 
 export interface OnboardingState {
-  currentStep: number;
-  data: OnboardingData;
-  errors: Partial<Record<keyof OnboardingData, string>>;
-  isComplete: boolean;
+    currentStep: number;
+    data: OnboardingData;
+    errors: Partial<Record<keyof OnboardingData, string>>;
+    isComplete: boolean;
 }
 
 export interface OnboardingActions {
-  setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
-  setError: (field: keyof OnboardingData, message: string) => void;
-  clearError: (field: keyof OnboardingData) => void;
-  nextStep: () => void;
-  prevStep: () => void;
-  goToStep: (step: number) => void;
-  validateStep: (step: number) => boolean;
-  reset: () => void;
-  complete: () => void;
+    setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
+    setError: (field: keyof OnboardingData, message: string) => void;
+    clearError: (field: keyof OnboardingData) => void;
+    nextStep: () => void;
+    prevStep: () => void;
+    goToStep: (step: number) => void;
+    validateStep: (step: number) => boolean;
+    reset: () => void;
+    complete: () => void;
 }
 
 export type OnboardingStore = OnboardingState & OnboardingActions;
