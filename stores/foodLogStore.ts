@@ -1,6 +1,5 @@
 import  { create } from 'zustand';
 import  { supabase} from "@/lib/superbase";
-import {falseTag} from "yaml/dist/schema/yaml-1.1/bool";
 
 // ============================================================================
 // STEP 1: DEFINE TYPES (What data structures do we need)
