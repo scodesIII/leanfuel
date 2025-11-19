@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 .pnpm-debug.log
+package-lock.json
 
 # Expo
 .expo/
@@ -11,6 +12,8 @@ web-build/
 expo-env.d.ts
 
 # Native
+android/
+ios/
 .kotlin/
 *.orig.*
 *.jks
