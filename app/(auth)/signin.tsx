@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { View, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity,
+import {
+  View, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity,
 } from 'react-native';
 import { supabase } from '@/lib/superbase';
 // import { useThemeColor } from '@/hooks/useThemeColor';
@@ -40,22 +41,22 @@ export default function SignIn() {
   // Optional: Add rate limiting helper
   // const useRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
   // const attempts = useRef([]);
-  
+
   // const isRateLimited = () => {
   //   const now = Date.now();
   //   const recentAttempts = attempts.current.filter(
   //     attempt => now - attempt < windowMs
   //   );
   //   attempts.current = recentAttempts;
-    
+
   //   if (recentAttempts.length >= maxAttempts) {
   //     return true;
   //   }
-    
+
   //   attempts.current.push(now);
   //     return false;
   //   };
-  
+
   //   return { isRateLimited };
   // };
 
@@ -63,12 +64,12 @@ export default function SignIn() {
   // Usage with rate limiting
   // const handleSignInWithRateLimit = async () => {
   //   const { isRateLimited } = useRateLimit();
-    
+
   //   if (isRateLimited()) {
   //     Alert.alert('Error', 'Too many login attempts. Please try again later.');
   //     return;
   //   }
-    
+
   //   // Continue with regular sign-in logic...
   //   await handleSignIn();
   // };
@@ -94,44 +95,44 @@ export default function SignIn() {
     setError(''); // Clear previous errors
 
     try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(), // Normalize email
-      password: password,
-    });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(), // Normalize email
+        password: password,
+      });
 
-    if (error) {
-      // Log error for debugging (don't expose sensitive details to user)
-      console.error('Auth error:', error);
-      
-      // Generic error message to prevent user enumeration attacks
-      setError('Invalid email or password');
-      return;
+      if (error) {
+        // Log error for debugging (don't expose sensitive details to user)
+        console.error('Auth error:', error);
+
+        // Generic error message to prevent user enumeration attacks
+        setError('Invalid email or password');
+        return;
+      }
+
+      // Verify user is authenticated
+      if (data?.user) {
+        // Optional: Check if email is verified
+        // if (!data.user.email_confirmed_at) {
+        //   Alert.alert('Error', 'Please verify your email before signing in');
+        //   return;
+        // }
+
+        // Success - reset navigation stack and navigate to main app
+        router.dismissAll();
+        router.replace('/(tabs)/dashboard');
+      }
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    // Verify user is authenticated
-    if (data?.user) {
-      // Optional: Check if email is verified
-      // if (!data.user.email_confirmed_at) {
-      //   Alert.alert('Error', 'Please verify your email before signing in');
-      //   return;
-      // }
-
-      // Success - reset navigation stack and navigate to main app
-      router.dismissAll();
-      router.replace('/(tabs)/dashboard');
-    }
-
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    Alert.alert('Error', 'An unexpected error occurred. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <StatusBar style="auto" />
+      <StatusBar style="auto" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -139,19 +140,19 @@ export default function SignIn() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-           {/* Main content */}
+          {/* Main content */}
           <View style={styles.content}>
             <ThemedText type="title" style={styles.title}>Welcome back</ThemedText>
             <ThemedText style={styles.subtitle}>
               Sign in to continue your fitness journey
             </ThemedText>
-            
+
             {error ? (
               <View style={styles.errorContainer}>
                 <ThemedText style={styles.errorText}>{error}</ThemedText>
               </View>
             ) : null}
-            
+
             <View style={styles.form}>
               <Input
                 label="Email"
@@ -164,7 +165,7 @@ export default function SignIn() {
                   <Ionicons name="mail-outline" size={20} color="#94a3b8" />
                 }
               />
-              
+
               <Input
                 label="Password"
                 placeholder="Enter your password"
@@ -175,7 +176,7 @@ export default function SignIn() {
                   <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" />
                 }
               />
-              
+
               <Link href="/(auth)/forgot-password" asChild>
                 <TouchableOpacity style={styles.forgotPasswordContainer}>
                   <ThemedText style={{ color: primaryColor }}>
@@ -183,7 +184,7 @@ export default function SignIn() {
                   </ThemedText>
                 </TouchableOpacity>
               </Link>
-              
+
               <Button
                 title="Sign In"
                 loading={loading}
@@ -191,7 +192,7 @@ export default function SignIn() {
                 onPress={handleSignIn}
                 style={{ marginTop: 24 }}
               />
-              
+
               <View style={styles.registerContainer}>
                 <ThemedText>Don't have an account? </ThemedText>
                 <Link href="/(auth)/signup" asChild>

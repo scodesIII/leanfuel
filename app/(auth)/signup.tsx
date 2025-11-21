@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
-import { router, Link} from 'expo-router';
+import { router, Link } from 'expo-router';
 import { supabase } from '@/lib/superbase';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Text } from '@/components/ui/text';
@@ -106,7 +106,7 @@ export default function SignUp() {
 
       if (error) {
         console.error('Signup error:', error.message);
-        
+
         // Handle specific Supabase errors gracefully
         switch (error.message) {
           case 'User already registered':
@@ -152,7 +152,7 @@ export default function SignUp() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-        <StatusBar style="auto" />
+      <StatusBar style="auto" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -166,13 +166,13 @@ export default function SignUp() {
             <ThemedText style={styles.subtitle}>
               Sign up to start tracking your health journey
             </ThemedText>
-            
+
             {error ? (
               <View style={styles.errorContainer}>
                 <ThemedText style={styles.errorText}>{error}</ThemedText>
               </View>
             ) : null}
-            
+
             <View style={styles.form}>
               <Input
                 label="Email"
@@ -185,7 +185,7 @@ export default function SignUp() {
                   <Ionicons name="mail-outline" size={20} color="#94a3b8" />
                 }
               />
-              
+
               <Input
                 label="Password"
                 placeholder="At least 6 characters"
@@ -196,7 +196,7 @@ export default function SignUp() {
                   <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" />
                 }
               />
-              
+
               <Input
                 label="Confirm Password"
                 placeholder="Confirm your password"
@@ -207,7 +207,7 @@ export default function SignUp() {
                   <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" />
                 }
               />
-              
+
               <Button
                 title="Create Account"
                 loading={loading}
@@ -215,7 +215,7 @@ export default function SignUp() {
                 onPress={handleSignUp}
                 style={{ marginTop: 24 }}
               />
-              
+
               <View style={styles.loginContainer}>
                 <ThemedText>Already have an account? </ThemedText>
                 <Link href="/(auth)/signin" asChild>
