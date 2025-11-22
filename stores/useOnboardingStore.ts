@@ -69,3 +69,90 @@ const validateStep = (step: number, data: OnboardingData): Record<string, string
   return errors;
 };
 
+
+export const useOnboardingStore = create<OnboardingStore>()(
+  persist(
+    (set, get) => ({
+      // Initial State
+      currentStep: 0,
+      data: initialData,
+      errors: {},
+      isComplete: false,
+
+      // Actions
+      setField: (field, value) => {
+        set((state) => ({
+          data: { ...state.data, [field]: value },
+          errors: { ...state.errors, [field]: undefined },
+        }));
+      },
+
+      setError: (field, message) => {
+        set((state) => ({
+          errors: { ...state.errors, [field]: message },
+        }));
+      },
+
+      clearError: (field) => {
+        set((state) => {
+          const newErrors = { ...state.errors };
+          delete newErrors[field];
+          return { errors: newErrors };
+        });
+      },
+
+      nextStep: () => {
+        const { currentStep, data } = get();
+        const errors = validateStep(currentStep, data);
+
+        if (Object.keys(errors).length > 0) {
+          set({ errors });
+          return;
+        }
+
+        set({
+          errors: {},
+          currentStep: currentStep + 1,
+        });
+      },
+
+      prevStep: () => {
+        set((state) => ({
+          currentStep: Math.max(0, state.currentStep - 1),
+          errors: {},
+        }));
+      },
+
+      goToStep: (step) => {
+        set({ currentStep: step, errors: {} });
+      },
+
+      validateStep: (step) => {
+        const { data } = get();
+        const errors = validateStep(step, data);
+        set({ errors });
+        return Object.keys(errors).length === 0;
+      },
+
+      reset: () => {
+        set({
+          currentStep: 0,
+          data: initialData,
+          errors: {},
+          isComplete: false,
+        });
+      },
+
+      complete: () => {
+        set({ isComplete: true });
+      },
+    }),
+    {
+      name: 'leanfuel-onboarding', // localStorage key
+      partialize: (state) => ({
+        currentStep: state.currentStep,
+        data: state.data,
+      }), // Only persist step and data, not errors
+    }
+  )
+);
