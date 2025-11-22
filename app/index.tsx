@@ -24,7 +24,7 @@ export default function Home() {
   const backgroundColor = useThemeColor({}, 'background');
   const secondaryColor = useThemeColor({}, 'secondary');
   const accentColor = useThemeColor({}, 'accent');
- 
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor }}>
@@ -33,10 +33,10 @@ export default function Home() {
       <View style={styles.container}>
         {/* Decorative elements */}
         <View style={styles.decorationContainer}>
-          <View 
+          <View
             style={[
-              styles.circleDecoration, 
-              { 
+              styles.circleDecoration,
+              {
                 backgroundColor: primaryColor,
                 width: width * 0.6,
                 height: width * 0.6,
@@ -44,12 +44,12 @@ export default function Home() {
                 right: -width * 0.2,
                 opacity: 0.2,
               }
-            ]} 
+            ]}
           />
-          <View 
+          <View
             style={[
-              styles.circleDecoration, 
-              { 
+              styles.circleDecoration,
+              {
                 backgroundColor: secondaryColor,
                 width: width * 0.4,
                 height: width * 0.4,
@@ -57,12 +57,12 @@ export default function Home() {
                 left: -width * 0.2,
                 opacity: 0.15,
               }
-            ]} 
+            ]}
           />
-          <View 
+          <View
             style={[
-              styles.circleDecoration, 
-              { 
+              styles.circleDecoration,
+              {
                 backgroundColor: accentColor,
                 width: width * 0.3,
                 height: width * 0.3,
@@ -70,17 +70,17 @@ export default function Home() {
                 right: -width * 0.1,
                 opacity: 0.1,
               }
-            ]} 
+            ]}
           />
         </View>
 
         {/* Logo and app name */}
         <View style={styles.logoContainer}>
           <View style={[styles.logoBackground, { backgroundColor: primaryColor }]}>
-            <Ionicons 
-              name="leaf" 
-              size={64} 
-              color="white" 
+            <Ionicons
+              name="leaf"
+              size={64}
+              color="white"
               style={styles.logoIcon}
               accessibilityLabel="logo"
             />
@@ -95,18 +95,18 @@ export default function Home() {
 
         {/* Feature highlights */}
         <View style={styles.featuresContainer}>
-          <FeatureItem 
-            icon="nutrition-outline" 
+          <FeatureItem
+            icon="nutrition-outline"
             title="Track your nutrition"
             description="Log meals, scan barcodes, and monitor daily intake"
           />
-          <FeatureItem 
-            icon="barbell-outline" 
+          <FeatureItem
+            icon="barbell-outline"
             title="Log your workouts"
             description="Record exercises and track your progress"
           />
-          <FeatureItem 
-            icon="analytics-outline" 
+          <FeatureItem
+            icon="analytics-outline"
             title="Visualize progress"
             description="See your journey with detailed insights"
           />
@@ -114,20 +114,24 @@ export default function Home() {
 
         {/* Call to action buttons */}
         <View style={styles.buttonContainer}>
-          <Link href="/(auth)/signin" asChild>
+          <Link href="/onboarding" asChild>
             <Button
-              title="Log In"
+              title="Get Started"
               variant="primary"
               style={styles.button}
             />
           </Link>
-          <Link href="/(auth)/signup" asChild>
-            <Button
-              title="Sign Up"
-              variant="outline"
-              style={styles.button}
-            />
-          </Link>
+
+          <View style={styles.loginLinkContainer}>
+            <ThemedText style={styles.loginText}>Already have an account? </ThemedText>
+            <Link href="/(auth)/signin" asChild>
+              <TouchableOpacity>
+                <ThemedText style={{ color: primaryColor, fontWeight: '600' }}>
+                  Log in
+                </ThemedText>
+              </TouchableOpacity>
+            </Link>
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -218,5 +222,15 @@ const styles = StyleSheet.create({
   },
   button: {
     marginBottom: 12,
+  },
+  loginLinkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  loginText: {
+    fontSize: 14,
+    opacity: 0.8,
   },
 });
