@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { OnboardingData, OnboardingStore } from "@/types/onboarding";
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { OnboardingData, OnboardingStore } from '@/types/onboarding';
 
 const initialData: OnboardingData = {
   goal: '',
@@ -148,7 +149,8 @@ export const useOnboardingStore = create<OnboardingStore>()(
       },
     }),
     {
-      name: 'leanfuel-onboarding', // localStorage key
+      name: 'leanfuel-onboarding',
+      storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         currentStep: state.currentStep,
         data: state.data,
