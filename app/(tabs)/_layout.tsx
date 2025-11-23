@@ -1,10 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { SpecialTabButton } from '@/components/SpecialTabButton';
@@ -18,7 +17,6 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].primary,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
@@ -34,7 +32,7 @@ export default function TabLayout() {
           title: 'Dashboard', // refers to tab title
           tabBarLabel: 'Dashboard', // refers to tab label
           // tabBarBadge: 2,
-          tabBarIcon: ({ color, size }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, size }) => <Ionicons size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -58,7 +56,7 @@ export default function TabLayout() {
         options={{
           title: 'Food', // refers to tab title
           tabBarLabel: 'Food', // refers to tab label
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="fast-food" color={color} />,
         }}
       />
     </Tabs>

@@ -2,7 +2,6 @@ import { Stack } from 'expo-router';
 import * as Font from 'expo-font';
 import { useCallback, useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import "../global.css"
@@ -27,9 +26,9 @@ export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
   const { initialize, isInitialized, isLoading } = useUserStore();
 
-    useEffect(() => {
-        initialize();
-    }, []);
+  useEffect(() => {
+    initialize();
+  }, []);
 
   useEffect(() => {
     async function prepare() {
