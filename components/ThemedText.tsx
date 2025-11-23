@@ -1,4 +1,5 @@
 import { Text, type TextProps, StyleSheet } from 'react-native';
+import { cssInterop } from 'nativewind';
 
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { Colors } from '@/constants/Colors';
@@ -7,9 +8,10 @@ export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  className?: string;
 };
 
-export function ThemedText({
+function ThemedTextBase({
   style,
   lightColor,
   darkColor,
@@ -33,6 +35,12 @@ export function ThemedText({
     />
   );
 }
+
+cssInterop(ThemedTextBase, {
+  className: 'style',
+});
+
+export const ThemedText = ThemedTextBase;
 
 const styles = StyleSheet.create({
   default: {
