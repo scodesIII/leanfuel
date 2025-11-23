@@ -73,3 +73,18 @@ export const Colors = {
     info: '#2563eb', // Blue 600
   },
 };
+
+
+export const hexToRgba = (hex: string, alpha: number) => {
+  if (!hex || !hex.startsWith('#') || hex.length !== 7) {
+    console.warn(`Invalid hex color passed: "${hex}"`);
+    return 'rgba(0,0,0,0)';
+  }
+
+  const bigint = parseInt(hex.slice(1), 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
