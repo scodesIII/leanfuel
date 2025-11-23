@@ -18,9 +18,6 @@ export const GoalStep = () => {
     const primaryColor = useThemeColor({}, 'primary');
     const borderColor = useThemeColor({}, 'border');
 
-    // Debug: Log primaryColor to see what we're getting
-    console.log('GoalStep - primaryColor:', primaryColor, 'data.goal:', data.goal);
-
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
             {/* Header */}
@@ -44,10 +41,6 @@ export const GoalStep = () => {
                     const optionBackgroundColor = isSelected ? hexToRgba(primaryColor, 0.2) : 'transparent';
                     const iconColor = isSelected ? primaryColor : '#9CA3AF';
 
-                    if (isSelected) {
-                        console.log(`Selected ${id}: bgColor=${optionBackgroundColor}, borderColor=${optionBorderColor}`);
-                    }
-
                     return (
                         <TouchableOpacity
                             // FIX: Include isSelected in key to force component remount when selection changes.
@@ -62,10 +55,7 @@ export const GoalStep = () => {
                                     backgroundColor: optionBackgroundColor,
                                 },
                             ]}
-                            onPress={() => {
-                                console.log('Selecting goal:', id);
-                                setField('goal', id);
-                            }}
+                            onPress={() => setField('goal', id)}
                         >
                             <Icon size={28} color={iconColor} />
                             <View style={styles.optionText}>
