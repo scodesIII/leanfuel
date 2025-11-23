@@ -13,7 +13,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ currentStep, onStepPre
     const steps = [
         { icon: Target, label: 'Goal' },
         { icon: Activity, label: 'Activity' },
-        { icon: Utensils, label: 'Diet' },
+        // { icon: Utensils, label: 'Diet' }, // Disabled - calorie tracking focus for now
         { icon: User, label: 'Info' },
         { icon: Calendar, label: 'Target' },
         { icon: Check, label: 'Review' },
