@@ -1,36 +1,57 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import { ChevronLeft, ChevronRight, Check, Target, Activity, Utensils, User, Calendar } from 'lucide-react-native';
+import { View, StyleSheet } from 'react-native';
+import { Target, Activity, Utensils, User, Calendar, Check } from 'lucide-react-native';
 import { GoalStep } from '@/components/onboarding/steps/GoalStep';
+import { ActivityStep } from '@/components/onboarding/steps/ActivityStep';
+import { NavigationButtons } from '@/components/onboarding/NavigationButtons';
+import { ProgressBar } from '@/components/onboarding/ProgressBar';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+
+const steps = [
+    { title: 'Goal', component: GoalStep, icon: Target },
+    { title: 'Activity', component: ActivityStep, icon: Activity },
+    // Placeholders for future steps
+    { title: 'Diet', component: () => <View><ThemedText>Diet Step (Coming Soon)</ThemedText></View>, icon: Utensils },
+    { title: 'Info', component: () => <View><ThemedText>Info Step (Coming Soon)</ThemedText></View>, icon: User },
+    { title: 'Target', component: () => <View><ThemedText>Target Step (Coming Soon)</ThemedText></View>, icon: Calendar },
+    { title: 'Review', component: () => <View><ThemedText>Review Step (Coming Soon)</ThemedText></View>, icon: Check },
+];
 
 export const OnboardingFlow = () => {
     const { currentStep, nextStep, prevStep, goToStep } = useOnboardingStore();
     const primaryColor = useThemeColor({}, 'primary');
 
-    const steps = [
-        { title: 'Goal', component: GoalStep, icon: Target },
-    ];
+    const CurrentStepComponent = steps[currentStep]?.component || steps[0].component;
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-            <View style={styles.maxWidth}>
-                {/* Header */}
-                <View style={styles.header}>
+        <View style={styles.container}>
+            <View style={styles.headerContainer}>
+                {/* App Title */}
+                <View style={styles.titleContainer}>
                     <ThemedText type="title" style={styles.title}>
                         Lean<ThemedText type='title' style={{ color: primaryColor }}>Fuel</ThemedText>
                     </ThemedText>
-                    <ThemedText style={styles.subtitle}>
-                        Your personalized nutrition journey
-                    </ThemedText>
                 </View>
 
-                {/* Current Step */}
-                <GoalStep />
+                {/* Progress Bar */}
+                <ProgressBar currentStep={currentStep} onStepPress={goToStep} />
             </View>
-        </ScrollView>
+
+            {/* Step Content */}
+            <View style={styles.contentContainer}>
+                <CurrentStepComponent />
+            </View>
+
+            {/* Navigation Buttons */}
+            <NavigationButtons
+                currentStep={currentStep}
+                totalSteps={steps.length}
+                onBack={prevStep}
+                onNext={nextStep}
+            />
+        </View>
     );
 };
 
@@ -38,25 +59,20 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    contentContainer: {
-        paddingVertical: 32,
+    headerContainer: {
         paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
     },
-    maxWidth: {
-        maxWidth: 600,
-        width: '100%',
-        alignSelf: 'center',
-    },
-    header: {
+    titleContainer: {
         alignItems: 'center',
-        marginBottom: 32,
+        marginBottom: 16,
     },
     title: {
-        fontSize: 36,
+        fontSize: 28,
         fontWeight: 'bold',
     },
-    subtitle: {
-        marginTop: 8,
-        opacity: 0.7,
+    contentContainer: {
+        flex: 1,
     },
 });
