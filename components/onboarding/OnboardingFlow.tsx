@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Target, Activity, Utensils, User, Calendar, Check } from 'lucide-react-native';
 import { GoalStep } from '@/components/onboarding/steps/GoalStep';
 import { ActivityStep } from '@/components/onboarding/steps/ActivityStep';
+import { DietaryStep } from '@/components/onboarding/steps/DietaryStep';
 import { NavigationButtons } from '@/components/onboarding/NavigationButtons';
 import { ProgressBar } from '@/components/onboarding/ProgressBar';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
@@ -12,8 +13,8 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 const steps = [
     { title: 'Goal', component: GoalStep, icon: Target },
     { title: 'Activity', component: ActivityStep, icon: Activity },
+    { title: 'Diet', component: DietaryStep, icon: Utensils },
     // Placeholders for future steps
-    { title: 'Diet', component: () => <View><ThemedText>Diet Step (Coming Soon)</ThemedText></View>, icon: Utensils },
     { title: 'Info', component: () => <View><ThemedText>Info Step (Coming Soon)</ThemedText></View>, icon: User },
     { title: 'Target', component: () => <View><ThemedText>Target Step (Coming Soon)</ThemedText></View>, icon: Calendar },
     { title: 'Review', component: () => <View><ThemedText>Review Step (Coming Soon)</ThemedText></View>, icon: Check },
