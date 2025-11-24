@@ -1,13 +1,17 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { hexToRgba } from '@/constants/Colors';
 
 export const PersonalInfoStep = () => {
     const { data, setField, errors } = useOnboardingStore();
     const primaryColor = useThemeColor({}, 'primary');
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');
+    const borderColor = useThemeColor({}, 'border');
+    const errorColor = useThemeColor({}, 'error');
 
     return (
         <KeyboardAvoidingView
@@ -16,14 +20,14 @@ export const PersonalInfoStep = () => {
         >
             <ScrollView style={styles.scrollView}>
                 <View style={styles.header}>
-                    <Text style={[styles.title, { color: textColor }]}>About You</Text>
-                    <Text style={styles.subtitle}>For accurate calculations</Text>
+                    <ThemedText type="title" style={styles.title}>About You</ThemedText>
+                    <ThemedText style={styles.subtitle}>For accurate calculations</ThemedText>
                 </View>
 
                 <View style={styles.formContainer}>
                     {/* Age Input */}
                     <View style={styles.fieldContainer}>
-                        <Text style={[styles.label, { color: textColor }]}>Age</Text>
+                        <ThemedText style={styles.label}>Age</ThemedText>
                         <TextInput
                             value={data.age}
                             onChangeText={(text) => setField('age', text)}
@@ -33,47 +37,51 @@ export const PersonalInfoStep = () => {
                             style={[
                                 styles.input,
                                 {
-                                    borderColor: errors.age ? '#EF4444' : '#E5E7EB',
+                                    borderColor: errors.age ? errorColor : borderColor,
                                     color: textColor,
                                     backgroundColor: backgroundColor
                                 }
                             ]}
                         />
-                        {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
+                        {errors.age && <Text style={[styles.errorText, { color: errorColor }]}>{errors.age}</Text>}
                     </View>
 
                     {/* Gender Selection */}
                     <View style={styles.fieldContainer}>
-                        <Text style={[styles.label, { color: textColor }]}>Gender</Text>
+                        <ThemedText style={styles.label}>Gender</ThemedText>
                         <View style={styles.genderRow}>
-                            {(['male', 'female', 'other'] as const).map((gender) => (
-                                <TouchableOpacity
-                                    key={gender}
-                                    onPress={() => setField('gender', gender)}
-                                    style={[
-                                        styles.genderButton,
-                                        {
-                                            borderColor: data.gender === gender ? primaryColor : '#E5E7EB',
-                                            backgroundColor: data.gender === gender ? `${primaryColor}15` : backgroundColor
-                                        }
-                                    ]}
-                                >
-                                    <Text style={[
-                                        styles.genderText,
-                                        { color: data.gender === gender ? primaryColor : textColor }
-                                    ]}>
-                                        {gender.charAt(0).toUpperCase() + gender.slice(1)}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
+                            {(['male', 'female', 'other'] as const).map((gender) => {
+                                const isSelected = data.gender === gender;
+                                return (
+                                    <TouchableOpacity
+                                        // FIX: Include isSelected in key to force component remount on Android
+                                        key={`${gender}-${isSelected}`}
+                                        onPress={() => setField('gender', gender)}
+                                        style={[
+                                            styles.genderButton,
+                                            {
+                                                borderColor: isSelected ? primaryColor : borderColor,
+                                                backgroundColor: isSelected ? hexToRgba(primaryColor, 0.2) : 'transparent'
+                                            }
+                                        ]}
+                                    >
+                                        <ThemedText style={[
+                                            styles.genderText,
+                                            { color: isSelected ? primaryColor : textColor }
+                                        ]}>
+                                            {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                                        </ThemedText>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
-                        {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
+                        {errors.gender && <Text style={[styles.errorText, { color: errorColor }]}>{errors.gender}</Text>}
                     </View>
 
                     {/* Weight and Height Row */}
                     <View style={styles.row}>
                         <View style={styles.halfField}>
-                            <Text style={[styles.label, { color: textColor }]}>Weight (kg)</Text>
+                            <ThemedText style={styles.label}>Weight (kg)</ThemedText>
                             <TextInput
                                 value={data.weight}
                                 onChangeText={(text) => setField('weight', text)}
@@ -83,17 +91,17 @@ export const PersonalInfoStep = () => {
                                 style={[
                                     styles.input,
                                     {
-                                        borderColor: errors.weight ? '#EF4444' : '#E5E7EB',
+                                        borderColor: errors.weight ? errorColor : borderColor,
                                         color: textColor,
                                         backgroundColor: backgroundColor
                                     }
                                 ]}
                             />
-                            {errors.weight && <Text style={styles.errorText}>{errors.weight}</Text>}
+                            {errors.weight && <Text style={[styles.errorText, { color: errorColor }]}>{errors.weight}</Text>}
                         </View>
 
                         <View style={styles.halfField}>
-                            <Text style={[styles.label, { color: textColor }]}>Height (cm)</Text>
+                            <ThemedText style={styles.label}>Height (cm)</ThemedText>
                             <TextInput
                                 value={data.height}
                                 onChangeText={(text) => setField('height', text)}
@@ -103,13 +111,13 @@ export const PersonalInfoStep = () => {
                                 style={[
                                     styles.input,
                                     {
-                                        borderColor: errors.height ? '#EF4444' : '#E5E7EB',
+                                        borderColor: errors.height ? errorColor : borderColor,
                                         color: textColor,
                                         backgroundColor: backgroundColor
                                     }
                                 ]}
                             />
-                            {errors.height && <Text style={styles.errorText}>{errors.height}</Text>}
+                            {errors.height && <Text style={[styles.errorText, { color: errorColor }]}>{errors.height}</Text>}
                         </View>
                     </View>
                 </View>
@@ -130,14 +138,13 @@ const styles = StyleSheet.create({
         paddingVertical: 32,
     },
     title: {
-        fontSize: 30,
+        fontSize: 28,
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: 8,
     },
     subtitle: {
-        fontSize: 16,
-        color: '#6B7280',
+        opacity: 0.7,
         textAlign: 'center',
     },
     formContainer: {
@@ -159,7 +166,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     errorText: {
-        color: '#EF4444',
         fontSize: 12,
         marginTop: 4,
     },
