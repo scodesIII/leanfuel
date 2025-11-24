@@ -5,7 +5,7 @@ export interface OnboardingData {
     activityLevel: 'sedentary' | 'light' | 'moderate' | 'very' | 'extra' | '';
     dietaryPreferences: string[];
     age: string;
-    gender: 'male' | 'female' | '';
+    gender: 'male' | 'female' | 'other' | '';
     weight: string;
     height: string;
     targetWeight: string;
