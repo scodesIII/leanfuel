@@ -52,22 +52,28 @@ export const PersonalInfoStep = () => {
                         <View style={styles.genderRow}>
                             {(['male', 'female', 'other'] as const).map((gender) => {
                                 const isSelected = data.gender === gender;
+
+                                // Pre-compute colors for better Android performance
+                                const buttonBorderColor = isSelected ? primaryColor : borderColor;
+                                const buttonBackgroundColor = isSelected ? hexToRgba(primaryColor, 0.2) : backgroundColor;
+                                const buttonTextColor = isSelected ? primaryColor : textColor;
+
                                 return (
                                     <TouchableOpacity
-                                        // FIX: Include isSelected in key to force component remount on Android
-                                        key={`${gender}-${isSelected}`}
+                                        key={gender}
                                         onPress={() => setField('gender', gender)}
+                                        activeOpacity={0.7}
                                         style={[
                                             styles.genderButton,
                                             {
-                                                borderColor: isSelected ? primaryColor : borderColor,
-                                                backgroundColor: isSelected ? hexToRgba(primaryColor, 0.2) : 'transparent'
+                                                borderColor: buttonBorderColor,
+                                                backgroundColor: buttonBackgroundColor
                                             }
                                         ]}
                                     >
                                         <ThemedText style={[
                                             styles.genderText,
-                                            { color: isSelected ? primaryColor : textColor }
+                                            { color: buttonTextColor }
                                         ]}>
                                             {gender.charAt(0).toUpperCase() + gender.slice(1)}
                                         </ThemedText>
