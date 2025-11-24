@@ -17,6 +17,7 @@ export const GoalStep = () => {
     const { data, setField, errors } = useOnboardingStore();
     const primaryColor = useThemeColor({}, 'primary');
     const borderColor = useThemeColor({}, 'border');
+    const errorColor = useThemeColor({}, 'error');
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -70,7 +71,7 @@ export const GoalStep = () => {
 
             {/* Error Message */}
             {errors.goal && (
-                <ThemedText style={styles.error}>{errors.goal}</ThemedText>
+                <ThemedText style={[styles.error, { color: errorColor }]}>{errors.goal}</ThemedText>
             )}
 
             {/* Debug Info (Temporary) */}
@@ -128,7 +129,6 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     error: {
-        color: '#ef4444',
         fontSize: 14,
         textAlign: 'center',
         marginTop: 16,

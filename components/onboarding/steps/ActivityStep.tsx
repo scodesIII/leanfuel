@@ -12,6 +12,7 @@ export const ActivityStep = () => {
 
     const primaryColor = useThemeColor({}, 'primary');
     const borderColor = useThemeColor({}, 'border');
+    const errorColor = useThemeColor({}, 'error');
 
     const levels = [
         { id: 'sedentary' as const, label: 'Sedentary', desc: 'Little/no exercise', multiplier: 1.2 },
@@ -67,7 +68,7 @@ export const ActivityStep = () => {
             </View>
 
             {errors.activityLevel && (
-                <ThemedText style={styles.error}>{errors.activityLevel}</ThemedText>
+                <ThemedText style={[styles.error, { color: errorColor }]}>{errors.activityLevel}</ThemedText>
             )}
         </ScrollView>
     );
@@ -141,7 +142,6 @@ const styles = StyleSheet.create({
         marginLeft: 16,
     },
     error: {
-        color: '#EF4444',
         fontSize: 14,
         textAlign: 'center',
         marginBottom: 16,
