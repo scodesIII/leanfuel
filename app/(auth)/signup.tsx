@@ -3,7 +3,6 @@ import { View, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, To
 import { router, Link } from 'expo-router';
 import { supabase } from '@/lib/superbase';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { Text } from '@/components/ui/text';
 import { TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
@@ -25,6 +24,7 @@ export default function SignUp() {
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({}, 'border');
   const primaryColor = useThemeColor({}, 'primary');
+  const errorColor = useThemeColor({}, 'error');
 
   // Enhanced email validation function
   const validateEmail = (email: string) => {
@@ -168,8 +168,8 @@ export default function SignUp() {
             </ThemedText>
 
             {error ? (
-              <View style={styles.errorContainer}>
-                <ThemedText style={styles.errorText}>{error}</ThemedText>
+              <View style={[styles.errorContainer, { backgroundColor: `${errorColor}1A` }]}>
+                <ThemedText style={[styles.errorText, { color: errorColor }]}>{error}</ThemedText>
               </View>
             ) : null}
 
@@ -263,13 +263,11 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   errorContainer: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
   },
   errorText: {
-    color: '#ef4444',
     fontSize: 14,
   },
   form: {
