@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface NavigationButtonsProps {
   currentStep: number;
@@ -15,16 +16,21 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onBack,
   onNext,
 }) => {
+  const primaryColor = useThemeColor({}, 'primary');
+  const textColor = useThemeColor({}, 'text');
+  const borderColor = useThemeColor({}, 'border');
+
   return (
     <View style={styles.container}>
       {/* Only show back button if not on first step */}
       {currentStep > 0 && (
         <TouchableOpacity
           onPress={onBack}
-          style={[styles.button, styles.backButton]}
+          activeOpacity={0.7}
+          style={[styles.button, styles.backButton, { borderColor: borderColor }]}
         >
-          <ChevronLeft size={20} color='#374151' />
-          <Text style={[styles.buttonText, styles.backButtonText]}>
+          <ChevronLeft size={20} color={textColor} style={{ opacity: 1 }} />
+          <Text style={[styles.buttonText, styles.backButtonText, { color: textColor, opacity: 1 }]}>
             Back
           </Text>
         </TouchableOpacity>
@@ -33,7 +39,8 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       {currentStep < totalSteps - 1 && (
         <TouchableOpacity
           onPress={onNext}
-          style={[styles.button, styles.nextButton]}
+          activeOpacity={0.7}
+          style={[styles.button, styles.nextButton, { backgroundColor: primaryColor }]}
         >
           <Text style={[styles.buttonText, styles.nextButtonText]}>Continue</Text>
           <ChevronRight size={20} color="white" />
@@ -60,24 +67,18 @@ const styles = StyleSheet.create({
   buttonText: {
     fontWeight: '500',
     fontSize: 16,
+    opacity: 1,
   },
   backButton: {
-    backgroundColor: '#E5E7EB',
-  },
-  backButtonDisabled: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
   },
   backButtonText: {
-    color: '#374151',
     marginLeft: 8,
-  },
-  backButtonTextDisabled: {
-    color: '#9CA3AF',
-    marginLeft: 8,
+    opacity: 1,
   },
   nextButton: {
     flex: 1,
-    backgroundColor: '#3B82F6',
     justifyContent: 'center',
   },
   nextButtonText: {
