@@ -31,10 +31,7 @@ const validateStep = (step: number, data: OnboardingData): Record<string, string
       }
       break;
 
-    case 2: // Dietary step (optional - no validation needed)
-      break;
-
-    case 3: // Personal info
+    case 2: // Personal info step (was step 3, but DietaryStep was removed)
       const age = parseInt(data.age);
       if (!data.age || isNaN(age) || age < 13 || age > 120) {
         errors.age = 'Please enter a valid age (13-120)';
@@ -55,7 +52,7 @@ const validateStep = (step: number, data: OnboardingData): Record<string, string
       }
       break;
 
-    case 4: // Target step
+    case 3: // Target step
       const targetWeight = parseFloat(data.targetWeight);
       if (!data.targetWeight || isNaN(targetWeight) || targetWeight < 30 || targetWeight > 500) {
         errors.targetWeight = 'Please enter a valid target weight (30-500 kg)';
