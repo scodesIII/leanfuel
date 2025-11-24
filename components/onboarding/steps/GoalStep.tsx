@@ -17,6 +17,7 @@ export const GoalStep = () => {
     const { data, setField, errors } = useOnboardingStore();
     const primaryColor = useThemeColor({}, 'primary');
     const borderColor = useThemeColor({}, 'border');
+    const backgroundColor = useThemeColor({}, 'background');
     const errorColor = useThemeColor({}, 'error');
 
     return (
@@ -36,19 +37,15 @@ export const GoalStep = () => {
                 {goals.map(({ id, label, icon: Icon, desc }) => {
                     const isSelected = data.goal === id;
 
-                    // FIX: Pre-compute colors outside of style array to ensure React Native
-                    // properly detects changes and re-renders on Android
+                    // Pre-compute colors for better Android performance
                     const optionBorderColor = isSelected ? primaryColor : borderColor;
-                    const optionBackgroundColor = isSelected ? hexToRgba(primaryColor, 0.2) : 'transparent';
+                    const optionBackgroundColor = isSelected ? hexToRgba(primaryColor, 0.2) : backgroundColor;
                     const iconColor = isSelected ? primaryColor : '#9CA3AF';
 
                     return (
                         <TouchableOpacity
-                            // FIX: Include isSelected in key to force component remount when selection changes.
-                            // This works around an Android rendering bug where background colors don't update
-                            // properly with inline dynamic styles. By changing the key, React treats it as a
-                            // new component and forces a full re-render, ensuring the background color is painted.
-                            key={`${id}-${isSelected}`}
+                            key={id}
+                            activeOpacity={0.7}
                             style={[
                                 styles.option,
                                 {

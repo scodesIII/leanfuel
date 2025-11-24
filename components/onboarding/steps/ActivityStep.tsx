@@ -12,6 +12,7 @@ export const ActivityStep = () => {
 
     const primaryColor = useThemeColor({}, 'primary');
     const borderColor = useThemeColor({}, 'border');
+    const backgroundColor = useThemeColor({}, 'background');
     const errorColor = useThemeColor({}, 'error');
 
     const levels = [
@@ -36,15 +37,21 @@ export const ActivityStep = () => {
             <View style={styles.options}>
                 {levels.map(({ id, label, desc, multiplier }) => {
                     const isSelected = data.activityLevel === id;
+
+                    // Pre-compute colors for better Android performance
+                    const optionBorderColor = isSelected ? primaryColor : borderColor;
+                    const optionBackgroundColor = isSelected ? hexToRgba(primaryColor, 0.2) : backgroundColor;
+
                     return (
                         <TouchableOpacity
-                            key={`${id}-${isSelected}`}
+                            key={id}
+                            activeOpacity={0.7}
                             onPress={() => setField('activityLevel', id)}
                             style={[
                                 styles.option,
                                 {
-                                    borderColor: isSelected ? primaryColor : borderColor,
-                                    backgroundColor: isSelected ? hexToRgba(primaryColor, 0.2) : 'transparent',
+                                    borderColor: optionBorderColor,
+                                    backgroundColor: optionBackgroundColor,
                                 }
                             ]}
                         >
@@ -69,8 +76,9 @@ export const ActivityStep = () => {
 
             {errors.activityLevel && (
                 <ThemedText style={[styles.error, { color: errorColor }]}>{errors.activityLevel}</ThemedText>
-            )}
-        </ScrollView>
+            )
+            }
+        </ScrollView >
     );
 };
 
