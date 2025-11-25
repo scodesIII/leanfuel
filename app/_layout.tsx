@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import * as Font from 'expo-font';
 import { useCallback, useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, LogBox } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import "../global.css"
@@ -10,6 +10,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 
 import { useUserStore } from '@/stores/userStore';
 import { ActivityIndicator } from 'react-native';
+
+// Ignore SafeAreaView deprecation warning from Expo Router/React Navigation dependencies
+LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
