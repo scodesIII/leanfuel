@@ -5,6 +5,7 @@ import { GoalStep } from '@/components/onboarding/steps/GoalStep';
 import { ActivityStep } from '@/components/onboarding/steps/ActivityStep';
 import { PersonalInfoStep } from '@/components/onboarding/steps/PersonalInfoStep';
 import { TargetStep } from '@/components/onboarding/steps/TargetStep';
+import { ReviewStep } from '@/components/onboarding/steps/ReviewStep';
 // import { DietaryStep } from '@/components/onboarding/steps/DietaryStep'; // Disabled for now - calorie tracking focus
 import { NavigationButtons } from '@/components/onboarding/NavigationButtons';
 import { ProgressBar } from '@/components/onboarding/ProgressBar';
@@ -16,10 +17,9 @@ const steps = [
     { title: 'Goal', component: GoalStep, icon: Target },
     { title: 'Activity', component: ActivityStep, icon: Activity },
     // { title: 'Diet', component: DietaryStep, icon: Utensils }, // Disabled - will add when diet plans are implemented
-    // Placeholders for future steps
     { title: 'Info', component: PersonalInfoStep, icon: User },
     { title: 'Target', component: TargetStep, icon: Calendar },
-    { title: 'Review', component: () => <View><ThemedText>Review Step (Coming Soon)</ThemedText></View>, icon: Check },
+    { title: 'Review', component: ReviewStep, icon: Check },
 ];
 
 export const OnboardingFlow = () => {
