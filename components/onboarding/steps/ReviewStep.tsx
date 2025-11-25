@@ -2,29 +2,109 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
+import { useUserStore } from '@/stores/userStore';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 
 export const ReviewStep = () => {
     const { data, complete } = useOnboardingStore();
+    const { user, updateProfile } = useUserStore();
     const primaryColor = useThemeColor({}, 'primary');
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');
     const cardColor = useThemeColor({}, 'card');
     const successColor = useThemeColor({}, 'success');
 
-    const handleComplete = async () => {
-        try {
-            // TODO: Replace with your Supabase call
-            console.log('💾 Saving to database:', data);
+    // Calculate BMR using Mifflin-St Jeor Equation
+    const calculateBMR = () => {
+        const weight = parseFloat(data.weight);
+        const height = parseFloat(data.height);
+        const age = parseInt(data.age);
+        const isMale = data.gender === 'male';
 
+        // BMR = (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) + s
+        // s = +5 for males, -161 for females
+        const bmr = (10 * weight) + (6.25 * height) - (5 * age) + (isMale ? 5 : -161);
+        return Math.round(bmr);
+    };
+
+    // Calculate TDEE (Total Daily Energy Expenditure)
+    const calculateTDEE = (bmr: number) => {
+        const activityMultipliers = {
+            sedentary: 1.2,
+            light: 1.375,
+            moderate: 1.55,
+            very: 1.725,
+            extra: 1.9,
+        };
+        const multiplier = activityMultipliers[data.activityLevel as keyof typeof activityMultipliers] || 1.2;
+        return Math.round(bmr * multiplier);
+    };
+
+    // Calculate daily calorie goal based on goal
+    const calculateCalorieGoal = (tdee: number) => {
+        const currentWeight = parseFloat(data.weight);
+        const targetWeight = parseFloat(data.targetWeight);
+        const weightDiff = currentWeight - targetWeight;
+
+        if (data.goal === 'lose') {
+            // Deficit of 500 calories per day (lose ~0.5kg per week)
+            return Math.round(tdee - 500);
+        } else if (data.goal === 'gain') {
+            // Surplus of 300-500 calories per day
+            return Math.round(tdee + 400);
+        } else {
+            // Maintain weight
+            return tdee;
+        }
+    };
+
+    const handleComplete = async () => {
+        if (!user) {
+            Alert.alert('Error', 'You must be logged in to complete onboarding.');
+            return;
+        }
+
+        try {
+            // Calculate nutritional goals
+            const bmr = calculateBMR();
+            const tdee = calculateTDEE(bmr);
+            const dailyCalories = calculateCalorieGoal(tdee);
+
+            // Calculate macros (40% protein, 30% carbs, 30% fat for balanced approach)
+            const proteinCalories = dailyCalories * 0.4;
+            const carbsCalories = dailyCalories * 0.3;
+            const fatCalories = dailyCalories * 0.3;
+
+            const proteinGrams = Math.round(proteinCalories / 4); // 4 cal per gram
+            const carbsGrams = Math.round(carbsCalories / 4); // 4 cal per gram
+            const fatGrams = Math.round(fatCalories / 9); // 9 cal per gram
+
+            // Update profile with onboarding data
+            await updateProfile({
+                onboarding_completed: true,
+                profile_completed: true,
+                daily_calorie_goal: dailyCalories,
+                protein_goal_g: proteinGrams,
+                carbs_goal_g: carbsGrams,
+                fat_goal_g: fatGrams,
+            });
+
+            // Mark onboarding as complete in the store
             complete();
 
-            // Navigate to main app
+            console.log('✅ Profile updated successfully:', {
+                bmr,
+                tdee,
+                dailyCalories,
+                macros: { protein: proteinGrams, carbs: carbsGrams, fat: fatGrams }
+            });
+
+            // Navigate to dashboard
             router.replace('/(tabs)/dashboard');
         } catch (error) {
-            console.error('Failed to save:', error);
+            console.error('Failed to save profile:', error);
             Alert.alert('Error', 'Failed to save your profile. Please try again.');
         }
     };
