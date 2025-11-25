@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, useSegments, useRouter, usePathname } from 'expo-router';
 import * as Font from 'expo-font';
 import { useCallback, useEffect, useState } from 'react';
 import { Text, View, LogBox } from 'react-native';
@@ -27,8 +27,16 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [appIsReady, setAppIsReady] = useState(false);
-  const { initialize, isInitialized, isLoading } = useUserStore();
 
+  // Get auth state from user store
+  const { user, profile, initialize, isInitialized, isLoading } = useUserStore();
+
+  // Get current route information for navigation guards
+  const segments = useSegments();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Initialize auth state on app load
   useEffect(() => {
     initialize();
   }, []);
@@ -51,6 +59,73 @@ export default function RootLayout() {
     prepare();
   }, []);
 
+  // ROUTE GUARD: Protect routes based on authentication and onboarding status
+  useEffect(() => {
+    // Wait for both app and auth to be ready before applying route guards
+    if (!appIsReady || !isInitialized) return;
+
+    // Define route categories for easier management
+    const inAuthGroup = segments[0] === '(auth)'; // signin, signup pages
+    const inTabsGroup = segments[0] === '(tabs)'; // dashboard and main app
+    const isOnboarding = pathname === '/onboarding';
+    const isHome = pathname === '/';
+
+    // GUARD 1: Redirect unauthenticated users trying to access protected routes
+    // Protected routes include: dashboard (tabs), onboarding
+    if (!user) {
+      // Allow access to public routes (home, signin, signup)
+      if (isHome || inAuthGroup) {
+        return; // User is on a public route, allow access
+      }
+
+      // User is not logged in and trying to access protected route
+      // Redirect to home page
+      console.log('🔒 Route Guard: Unauthenticated user redirected to home');
+      router.replace('/');
+      return;
+    }
+
+    // GUARD 2: Redirect authenticated users who haven't completed onboarding
+    // They should only be able to access the onboarding page
+    if (user && !profile?.onboarding_completed) {
+      // If they're already on onboarding page, allow access
+      if (isOnboarding) {
+        return;
+      }
+
+      // If they're on auth pages (signin/signup), allow them to sign out
+      if (inAuthGroup) {
+        return;
+      }
+
+      // User hasn't completed onboarding and is trying to access other routes
+      // Redirect to onboarding
+      console.log('📋 Route Guard: User redirected to complete onboarding');
+      router.replace('/onboarding');
+      return;
+    }
+
+    // GUARD 3: Redirect authenticated users with completed onboarding away from onboarding
+    // Once onboarding is complete, they shouldn't access it again
+    if (user && profile?.onboarding_completed && isOnboarding) {
+      // User has completed onboarding but is trying to access onboarding page
+      // Redirect to dashboard
+      console.log('✅ Route Guard: Onboarding complete, redirected to dashboard');
+      router.replace('/(tabs)/dashboard');
+      return;
+    }
+
+    // GUARD 4: Redirect authenticated users away from auth pages
+    // If user is logged in, they shouldn't see signin/signup
+    if (user && profile?.onboarding_completed && inAuthGroup) {
+      console.log('✅ Route Guard: Already authenticated, redirected to dashboard');
+      router.replace('/(tabs)/dashboard');
+      return;
+    }
+
+    // All guards passed - allow navigation
+  }, [user, profile, segments, pathname, appIsReady, isInitialized]);
+
   const onLayoutRootView = useCallback(() => {
     if (appIsReady) {
       // This tells the splash screen to hide immediately! If we call this after
@@ -62,7 +137,8 @@ export default function RootLayout() {
     }
   }, [appIsReady]);
 
-  if (!appIsReady) {
+  // Show loading screen while app is initializing
+  if (!appIsReady || !isInitialized) {
     return null; // You can also return a loading indicator here
   }
 
@@ -74,6 +150,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerTitle: "Home", gestureEnabled: false }} />
           <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_right' }} />
           <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+          <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
         </Stack>
         <StatusBar style="auto" />
         {/* </GluestackUIProvider> */}
