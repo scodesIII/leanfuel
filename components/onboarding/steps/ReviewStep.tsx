@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { Check } from 'lucide-react-native';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import { useUserStore } from '@/stores/userStore';
@@ -10,7 +10,7 @@ import { isNetworkError, isAuthError, getErrorMessage, getErrorTitle } from '@/u
 
 export const ReviewStep = () => {
     const { data, complete } = useOnboardingStore();
-    const { user, updateProfile } = useUserStore();
+    const { user, updateProfile, isLoading } = useUserStore(); // Add isLoading for button state
     const primaryColor = useThemeColor({}, 'primary');
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');
@@ -220,12 +220,26 @@ export const ReviewStep = () => {
                 </View>
             </View>
 
+            {/* Create My Plan Button with Loading State */}
             <TouchableOpacity
                 onPress={handleComplete}
+                disabled={isLoading} // Disable button during loading to prevent double-clicks
                 activeOpacity={0.7}
-                style={[styles.completeButton, { backgroundColor: primaryColor }]}
+                style={[
+                    styles.completeButton,
+                    {
+                        backgroundColor: isLoading ? `${primaryColor}80` : primaryColor, // 50% opacity when loading
+                        opacity: isLoading ? 0.7 : 1 // Additional visual feedback
+                    }
+                ]}
             >
-                <Text style={styles.completeButtonText}>Create My Plan</Text>
+                {isLoading ? (
+                    // Show spinner while saving profile
+                    <ActivityIndicator color="white" size="small" />
+                ) : (
+                    // Show button text when not loading
+                    <Text style={styles.completeButtonText}>Create My Plan</Text>
+                )}
             </TouchableOpacity>
         </ScrollView>
     );
