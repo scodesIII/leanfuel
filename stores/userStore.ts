@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/superbase';
 import type { User } from '@supabase/supabase-js';
+import { retryOperation } from '@/utils/errorHandling';
 
 export interface UserProfile {
     id: string;
@@ -86,7 +87,8 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
     },
 
-    // Update profile
+
+    // Update profile with retry logic for network errors
     updateProfile: async (updates) => {
         const { user } = get();
         if (!user) return;
@@ -94,22 +96,30 @@ export const useUserStore = create<UserState>((set, get) => ({
         set({ isLoading: true });
 
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .update(updates)
-                .eq('id', user.id)
-                .select()
-                .single();
+            // Retry up to 3 times for network errors
+            // This handles transient network failures automatically
+            const result = await retryOperation(
+                async () => {
+                    const response = await supabase
+                        .from('profiles')
+                        .update(updates)
+                        .eq('id', user.id)
+                        .select()
+                        .single();
+                    return response;
+                },
+                { maxRetries: 3, retryDelay: 1000 }
+            );
 
-            if (error) {
-                console.error('Error updating profile:', error);
-                return;
+            if (result.error) {
+                console.error('Error updating profile:', result.error);
+                throw result.error; // Re-throw for caller to handle with user-friendly message
             }
 
-            set({ profile: data });
+            set({ profile: result.data });
         } catch (error) {
             console.error('Error updating profile:', error);
-            return;
+            throw error; // Re-throw so ReviewStep can show appropriate error message
         } finally {
             set({ isLoading: false });
         }

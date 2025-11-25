@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/userStore';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
+import { isNetworkError, isAuthError, getErrorMessage, getErrorTitle } from '@/utils/errorHandling';
 
 export const ReviewStep = () => {
     const { data, complete } = useOnboardingStore();
@@ -61,6 +62,7 @@ export const ReviewStep = () => {
     };
 
     const handleComplete = async () => {
+        // Check if user is authenticated before proceeding
         if (!user) {
             Alert.alert('Error', 'You must be logged in to complete onboarding.');
             return;
@@ -104,8 +106,46 @@ export const ReviewStep = () => {
             // Navigate to dashboard
             router.replace('/(tabs)/dashboard');
         } catch (error) {
+            // Log technical error for debugging
             console.error('Failed to save profile:', error);
-            Alert.alert('Error', 'Failed to save your profile. Please try again.');
+
+            // Determine error type and show appropriate user-friendly message
+            if (isNetworkError(error)) {
+                // Network error - offer retry
+                Alert.alert(
+                    'No Internet Connection',
+                    'Please check your connection and try again.',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Retry', onPress: () => handleComplete() }
+                    ]
+                );
+            } else if (isAuthError(error)) {
+                // Auth error - redirect to signin
+                Alert.alert(
+                    'Session Expired',
+                    'Your session has expired. Please sign in again to continue.',
+                    [
+                        {
+                            text: 'Sign In',
+                            onPress: () => router.replace('/(auth)/signin')
+                        }
+                    ]
+                );
+            } else {
+                // Other errors - show user-friendly message
+                const errorMessage = getErrorMessage(error);
+                const errorTitle = getErrorTitle(error);
+
+                Alert.alert(
+                    errorTitle,
+                    errorMessage,
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Try Again', onPress: () => handleComplete() }
+                    ]
+                );
+            }
         }
     };
 
