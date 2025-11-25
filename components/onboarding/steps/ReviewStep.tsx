@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import { isNetworkError, isAuthError, getErrorMessage, getErrorTitle } from '@/utils/errorHandling';
+import { validateOnboardingData } from '@/utils/validation';
 
 export const ReviewStep = () => {
     const { data, complete } = useOnboardingStore();
@@ -65,6 +66,24 @@ export const ReviewStep = () => {
         // Check if user is authenticated before proceeding
         if (!user) {
             Alert.alert('Error', 'You must be logged in to complete onboarding.');
+            return;
+        }
+
+        // RE-VALIDATE all onboarding data before saving to database
+        // This prevents data manipulation and ensures data integrity
+        const validation = validateOnboardingData(data);
+
+        if (!validation.isValid) {
+            // Show validation errors to user
+            const errorMessages = Object.values(validation.errors).join('\n\n');
+            Alert.alert(
+                'Invalid Information',
+                `Please check your information:\n\n${errorMessages}`,
+                [{ text: 'OK' }]
+            );
+
+            // Log validation errors for debugging
+            console.error('❌ Validation failed:', validation.errors);
             return;
         }
 
