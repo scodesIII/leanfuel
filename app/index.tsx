@@ -114,7 +114,7 @@ export default function Home() {
 
         {/* Call to action buttons */}
         <View style={styles.buttonContainer}>
-          <Link href="/onboarding" asChild>
+          <Link href="/(auth)/signup" asChild>
             <Button
               title="Get Started"
               variant="primary"

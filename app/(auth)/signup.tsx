@@ -130,16 +130,8 @@ export default function SignUp() {
         setPassword('');
         setConfirmPassword('');
 
-        Alert.alert(
-          'Check Your Email',
-          'We\'ve sent you a verification link. Please check your email and click the link to activate your account.',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push('/(auth)/signin'),
-            },
-          ]
-        );
+        // Redirect to onboarding to complete profile setup
+        router.replace('/onboarding');
       }
 
     } catch (error) {
