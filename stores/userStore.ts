@@ -5,22 +5,53 @@ import type { User } from '@supabase/supabase-js';
 import { retryOperation } from '@/utils/errorHandling';
 
 export interface UserProfile {
+    // Basic profile info
     id: string;
     display_name: string | null;
     avatar_url: string | null;
     email: string | null;
     full_name: string | null;
-    daily_calorie_goal: number;
-    protein_goal_g: number;
-    carbs_goal_g: number;
-    fat_goal_g: number;
+
+    // Nutrition goals
+    daily_calorie_goal: number | null;
+    protein_goal_g: number | null;
+    carbs_goal_g: number | null;
+    fat_goal_g: number | null;
+
+    // Onboarding data - Personal info
+    age: number | null;
+    gender: 'male' | 'female' | 'other' | null;
+    current_weight: number | null;
+    target_weight: number | null;
+    height: number | null;
+
+    // Onboarding data - Goals
+    goal: 'lose' | 'maintain' | 'gain' | null;
+    timeframe: '3months' | '6months' | '12months' | 'flexible' | null;
+
+    // Onboarding data - Activity
+    activity_level: 'sedentary' | 'light' | 'moderate' | 'very' | 'extra' | null;
+
+    // Onboarding data - Dietary
+    dietary_preferences: string[] | null;
+
+    // Calculated metrics
+    bmr: number | null;
+    tdee: number | null;
+
+    // Settings
     preferred_units: 'metric' | 'imperial';
     timezone: string;
+
+    // Status flags
     onboarding_completed: boolean;
     profile_completed: boolean;
+    onboarding_completed_at: string | null;
+
+    // Timestamps
     created_at: string;
     updated_at: string;
-    last_login: string;
+    last_login: string | null;
 }
 
 interface UserState {
