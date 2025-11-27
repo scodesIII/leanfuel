@@ -16,16 +16,19 @@ const Dashboard = () => {
   const borderColor = useThemeColor({}, 'border');
 
   const [caloriesConsumed, setCaloriesConsumed] = useState(1250);
-  const [caloriesGoal] = useState(2000);
   const [waterIntake, setWaterIntake] = useState(6);
   const [steps] = useState(7495);
   const [weight] = useState(68.5);
-
+  
+  const { profile, isLoading } = useUserStore();
+  const user = useUserStore((state) => state.user);
+  
+  console.log('Profile data:', profile);
+  console.log('Calorie goal:', profile?.daily_calorie_goal);
+  
+  const caloriesGoal = profile?.daily_calorie_goal ?? 0;
   const caloriesRemaining = caloriesGoal - caloriesConsumed;
   const calorieProgress = (caloriesConsumed / caloriesGoal) * 100;
-
-  const profile = useUserStore((state) => state.profile);
-  const user = useUserStore((state) => state.user);
 
   // Prefer display_name from profile, fallback to email
     const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
