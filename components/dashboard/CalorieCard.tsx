@@ -1,5 +1,6 @@
 
 import { View, Text, StyleSheet } from "react-native"
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface CalorieCardProps {
     consumed: number;
@@ -8,8 +9,16 @@ interface CalorieCardProps {
 
 
 export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
-    const remaining = goal - consumed;
     const progress = goal > 0 ? (consumed / goal) * 100 : 0;
+    const remaining = goal - consumed;
+    const isOverGoal = remaining < 0;
+    const displayRemaining = Math.abs(remaining);
+
+
+    const cardColor = useThemeColor({}, 'card');
+    const textColor = useThemeColor({}, 'text');
+    const primaryColor = useThemeColor({}, 'primary');
+
 
     return (
         <View style={styles.container}>
@@ -25,7 +34,9 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
             </View>
     
             {/* Remaining */}
-            <Text style={styles.remaining}>{remaining} remaining</Text>
+            <Text style={styles.remaining}>
+                {isOverGoal ? `${displayRemaining} over goal` : `${displayRemaining} remaining`}
+            </Text>
         </View>
     );  
 }
