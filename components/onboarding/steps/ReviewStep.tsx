@@ -46,7 +46,6 @@ export const ReviewStep = () => {
 
         try {
             // Call database function to atomically save onboarding data and calculate nutrition goals
-            // This ensures all calculations are done server-side using evidence-based formulas
             const { data: rpcData, error } = await supabase.rpc('complete_onboarding', {
                 p_user_id: user.id,
                 p_goal: data.goal,
@@ -61,7 +60,7 @@ export const ReviewStep = () => {
             })
 
             if (error) {
-                console.error('❌ Error calling complete_onboarding:', error);
+                console.error('Error calling complete_onboarding:', error);
                 throw error;
             }
 
