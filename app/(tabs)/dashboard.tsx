@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity} from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { Plus, Droplets, Activity, Target, TrendingUp } from 'lucide-react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUserStore } from '@/stores/userStore';
+import { CalorieCard } from '@/components/dashboard/CalorieCard';
 
 const Dashboard = () => {
   const backgroundColor = useThemeColor({}, 'background');
@@ -19,19 +20,19 @@ const Dashboard = () => {
   const [waterIntake, setWaterIntake] = useState(6);
   const [steps] = useState(7495);
   const [weight] = useState(68.5);
-  
+
   const { profile, isLoading } = useUserStore();
   const user = useUserStore((state) => state.user);
-  
+
   console.log('Profile data:', profile);
   console.log('Calorie goal:', profile?.daily_calorie_goal);
-  
+
   const caloriesGoal = profile?.daily_calorie_goal ?? 0;
   const caloriesRemaining = caloriesGoal - caloriesConsumed;
   const calorieProgress = (caloriesConsumed / caloriesGoal) * 100;
 
   // Prefer display_name from profile, fallback to email
-    const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
 
   const macros = {
     carbs: { consumed: 125, goal: 250, color: '#fb923c' },
@@ -73,12 +74,12 @@ const Dashboard = () => {
         </ThemedText>
         <ThemedText style={{ fontSize: 12, opacity: 0.6, marginBottom: 12 }}>of {macro.goal}g</ThemedText>
         <View style={{ height: 8, backgroundColor: borderColor, borderRadius: 4, overflow: 'hidden' }}>
-          <View 
-            style={{ 
-              height: '100%', 
+          <View
+            style={{
+              height: '100%',
               backgroundColor: color,
               borderRadius: 4,
-              width: `${Math.min(progress, 100)}%` 
+              width: `${Math.min(progress, 100)}%`
             }}
           />
         </View>
@@ -100,35 +101,16 @@ const Dashboard = () => {
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <ThemedView style={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
-          <ThemedText style={{ fontSize: 24, fontWeight: 'bold' }}>Hi, { displayName }! 👋</ThemedText>
+          <ThemedText style={{ fontSize: 24, fontWeight: 'bold' }}>Hi, {displayName}! 👋</ThemedText>
           <ThemedText style={{ opacity: 0.7, marginTop: 4 }}>Let's crush your goals today</ThemedText>
         </ThemedView>
 
         {/* Main Calorie Card */}
         <ThemedView style={{ marginHorizontal: 24, marginBottom: 24 }}>
-          <ThemedView style={{ backgroundColor: cardBackground, borderRadius: 16, padding: 24 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <ThemedText style={{ fontSize: 18, fontWeight: '600' }}>Today's Calories</ThemedText>
-              <TouchableOpacity style={{ backgroundColor: primaryColor, borderRadius: 20, padding: 8 }}>
-                <Plus size={16} color="white" />
-              </TouchableOpacity>
-            </View>
-            
-            <View style={{ alignItems: 'center', marginBottom: 24 }}>
-              <CircularProgress progress={calorieProgress} />
-            </View>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <View style={{ alignItems: 'center' }}>
-                <ThemedText style={{ fontSize: 18, fontWeight: 'bold' }}>{caloriesConsumed}</ThemedText>
-                <ThemedText style={{ fontSize: 12, opacity: 0.7 }}>Consumed</ThemedText>
-              </View>
-              <View style={{ alignItems: 'center' }}>
-                <ThemedText style={{ fontSize: 18, fontWeight: 'bold' }}>{caloriesGoal}</ThemedText>
-                <ThemedText style={{ fontSize: 12, opacity: 0.7 }}>Goal</ThemedText>
-              </View>
-            </View>
-          </ThemedView>
+          <CalorieCard
+            consumed={caloriesConsumed}
+            goal={caloriesGoal}
+          />
         </ThemedView>
 
         {/* Macros Grid */}
@@ -144,14 +126,14 @@ const Dashboard = () => {
         {/* Stats Row */}
         <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
           <View style={{ flexDirection: 'row' }}>
-            <StatCard 
+            <StatCard
               icon={Activity}
               title="STEPS"
               value={steps.toLocaleString()}
               subtitle="of 10,000 goal"
               iconColor="#8B5CF6"
             />
-            <StatCard 
+            <StatCard
               icon={Droplets}
               title="WATER"
               value={`${waterIntake}/8`}
@@ -169,7 +151,7 @@ const Dashboard = () => {
               <ThemedText style={{ color: primaryColor, fontWeight: '500' }}>View All</ThemedText>
             </TouchableOpacity>
           </View>
-          
+
           <ThemedView style={{ backgroundColor: cardBackground, borderRadius: 12, overflow: 'hidden' }}>
             {recentFoods.map((food, index) => (
               <ThemedView key={index} style={{
