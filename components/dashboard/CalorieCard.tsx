@@ -19,6 +19,12 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     const textColor = useThemeColor({}, 'text');
     const primaryColor = useThemeColor({}, 'primary');
 
+    const getProgressColor = () => {
+    if (progress > 100) return '#F44336'; // Red
+    if (progress > 90) return '#FF9800'; // Orange
+    return '#4CAF50'; // Green
+};
+
 
     return (
         <View style={styles.container}>
