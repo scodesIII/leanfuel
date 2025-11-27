@@ -8,59 +8,16 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { router } from 'expo-router';
 import { isNetworkError, isAuthError, getErrorMessage, getErrorTitle } from '@/utils/errorHandling';
 import { validateOnboardingData } from '@/utils/validation';
+import { supabase } from '@/lib/superbase';
 
 export const ReviewStep = () => {
     const { data, complete } = useOnboardingStore();
-    const { user, updateProfile, isLoading } = useUserStore(); // Add isLoading for button state
+    const { user, fetchProfile, isLoading } = useUserStore();
     const primaryColor = useThemeColor({}, 'primary');
     const textColor = useThemeColor({}, 'text');
     const backgroundColor = useThemeColor({}, 'background');
     const cardColor = useThemeColor({}, 'card');
     const successColor = useThemeColor({}, 'success');
-
-    // Calculate BMR using Mifflin-St Jeor Equation
-    const calculateBMR = () => {
-        const weight = parseFloat(data.weight);
-        const height = parseFloat(data.height);
-        const age = parseInt(data.age);
-        const isMale = data.gender === 'male';
-
-        // BMR = (10 × weight in kg) + (6.25 × height in cm) - (5 × age in years) + s
-        // s = +5 for males, -161 for females
-        const bmr = (10 * weight) + (6.25 * height) - (5 * age) + (isMale ? 5 : -161);
-        return Math.round(bmr);
-    };
-
-    // Calculate TDEE (Total Daily Energy Expenditure)
-    const calculateTDEE = (bmr: number) => {
-        const activityMultipliers = {
-            sedentary: 1.2,
-            light: 1.375,
-            moderate: 1.55,
-            very: 1.725,
-            extra: 1.9,
-        };
-        const multiplier = activityMultipliers[data.activityLevel as keyof typeof activityMultipliers] || 1.2;
-        return Math.round(bmr * multiplier);
-    };
-
-    // Calculate daily calorie goal based on goal
-    const calculateCalorieGoal = (tdee: number) => {
-        const currentWeight = parseFloat(data.weight);
-        const targetWeight = parseFloat(data.targetWeight);
-        const weightDiff = currentWeight - targetWeight;
-
-        if (data.goal === 'lose') {
-            // Deficit of 500 calories per day (lose ~0.5kg per week)
-            return Math.round(tdee - 500);
-        } else if (data.goal === 'gain') {
-            // Surplus of 300-500 calories per day
-            return Math.round(tdee + 400);
-        } else {
-            // Maintain weight
-            return tdee;
-        }
-    };
 
     const handleComplete = async () => {
         // Check if user is authenticated before proceeding
@@ -88,39 +45,49 @@ export const ReviewStep = () => {
         }
 
         try {
-            // Calculate nutritional goals
-            const bmr = calculateBMR();
-            const tdee = calculateTDEE(bmr);
-            const dailyCalories = calculateCalorieGoal(tdee);
+            // Call database function to atomically save onboarding data and calculate nutrition goals
+            // This ensures all calculations are done server-side using evidence-based formulas
+            const { data: rpcData, error } = await supabase.rpc('complete_onboarding', {
+                p_user_id: user.id,
+                p_goal: data.goal,
+                p_activity_level: data.activityLevel,
+                p_dietary_preferences: data.dietaryPreferences,
+                p_age: data.age,
+                p_gender: data.gender,
+                p_current_weight: data.weight,
+                p_target_weight: data.targetWeight,
+                p_height: data.height,
+                p_timeframe: data.timeframe
+            })
 
-            // Calculate macros (40% protein, 30% carbs, 30% fat for balanced approach)
-            const proteinCalories = dailyCalories * 0.4;
-            const carbsCalories = dailyCalories * 0.3;
-            const fatCalories = dailyCalories * 0.3;
+            if (error) {
+                console.error('❌ Error calling complete_onboarding:', error);
+                throw error;
+            }
 
-            const proteinGrams = Math.round(proteinCalories / 4); // 4 cal per gram
-            const carbsGrams = Math.round(carbsCalories / 4); // 4 cal per gram
-            const fatGrams = Math.round(fatCalories / 9); // 9 cal per gram
-
-            // Update profile with onboarding data
-            await updateProfile({
-                onboarding_completed: true,
-                profile_completed: true,
-                daily_calorie_goal: dailyCalories,
-                protein_goal_g: proteinGrams,
-                carbs_goal_g: carbsGrams,
-                fat_goal_g: fatGrams,
+            // Log the calculations performed by the database
+            console.log('✅ Onboarding completed successfully:', {
+                bmr: rpcData.calculations.bmr,
+                tdee: rpcData.calculations.tdee,
+                dailyCalories: rpcData.calculations.calorie_goal,
+                macros: {
+                    protein: rpcData.calculations.protein_goal_g,
+                    carbs: rpcData.calculations.carbs_goal_g,
+                    fat: rpcData.calculations.fat_goal_g
+                },
+                percentages: {
+                    protein: rpcData.calculations.protein_percentage,
+                    carbs: rpcData.calculations.carbs_percentage,
+                    fat: rpcData.calculations.fat_percentage
+                }
             });
+
+            // Refresh profile from database to get the updated data
+            // The RPC function already saved everything, we just need to sync local state
+            await fetchProfile();
 
             // Mark onboarding as complete in the store
             complete();
-
-            console.log('✅ Profile updated successfully:', {
-                bmr,
-                tdee,
-                dailyCalories,
-                macros: { protein: proteinGrams, carbs: carbsGrams, fat: fatGrams }
-            });
 
             // Navigate to dashboard
             router.replace('/(tabs)/dashboard');
