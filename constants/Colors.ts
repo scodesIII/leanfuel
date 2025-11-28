@@ -22,22 +22,23 @@ export const Colors = {
     background: '#ffffff',
     card: '#f8fafc', // Slate 50
     border: '#e2e8f0', // Slate 200
-    
+    muted: '#64748b', // Slate 500 - for secondary text and less prominent elements
+
     // Brand colors
     primary: primaryLight,
     secondary: secondaryLight,
     accent: accentLight,
-    
+
     // Tab navigation
     tabIconDefault: '#94a3b8', // Slate 400
     tabIconSelected: primaryLight,
     tabBackground: '#ffffff',
-    
+
     // Nutritional elements
     protein: '#4ade80', // Green
     carbs: '#facc15', // Yellow
     fat: '#fb923c', // Orange
-    
+
     // Status colors
     success: '#10b981', // Emerald 500
     warning: '#f59e0b', // Amber 500
@@ -50,22 +51,23 @@ export const Colors = {
     background: '#0f172a', // Slate 900
     card: '#1e293b', // Slate 800
     border: '#334155', // Slate 700
-    
+    muted: '#94a3b8', // Slate 400 - for secondary text and less prominent elements
+
     // Brand colors
     primary: primaryDark,
     secondary: secondaryDark,
     accent: accentDark,
-    
+
     // Tab navigation
     tabIconDefault: '#64748b', // Slate 500
     tabIconSelected: primaryDark,
     tabBackground: '#1e293b', // Slate 800
-    
+
     // Nutritional elements
     protein: '#22c55e', // Green
     carbs: '#eab308', // Yellow
     fat: '#f97316', // Orange
-    
+
     // Status colors
     success: '#059669', // Emerald 600
     warning: '#d97706', // Amber 600
