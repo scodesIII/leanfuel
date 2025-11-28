@@ -15,7 +15,8 @@ export default {
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.scodesiii.leanfuel"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,13 +24,13 @@ export default {
         "backgroundColor": "#ffffff",
       },
       "edgeToEdgeEnabled": true,
-        "package": "com.scodesiii.leanfuel",
+      "package": "com.scodesiii.leanfuel",
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-        "expo-dev-client",
+      "expo-dev-client",
       "expo-web-browser",
       "expo-router"
     ],
@@ -39,9 +40,9 @@ export default {
     extra: {
       supabaseUrl: process.env.SUPABASE_URL,
       supabaseKey: process.env.SUPABASE_KEY,
-        "eas": {
-            "projectId": "3c7f52ae-7909-426a-b0b1-92134981a8f6"
-        }
+      "eas": {
+        "projectId": "3c7f52ae-7909-426a-b0b1-92134981a8f6"
+      }
     },
   },
 };
