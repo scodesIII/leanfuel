@@ -21,7 +21,10 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     const cardColor = useThemeColor({}, "card");
     const textColor = useThemeColor({}, "text");
     const mutedColor = useThemeColor({}, "muted");
-    const primaryColor = useThemeColor({}, "primary");
+    
+    const successColor = useThemeColor({}, "success");
+    const errorColor = useThemeColor({}, "error");
+    const infoColor = useThemeColor({}, "info");
 
     // Apple Fitness-style ring animation
     const ringProgress = useRef(new Animated.Value(0)).current;
@@ -49,14 +52,21 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
         outputRange: [circumference, 0],
     });
 
-    // Determine gradient colors based on progress
+    // Helper to create gradient variations from a base color
+    const createGradient = (baseColor: string) => {
+        // For now, use the same color for all gradient stops
+        // Could be enhanced to generate lighter/darker variations
+        return [baseColor, baseColor, baseColor];
+    };
+
+    // Determine gradient colors based on progress using theme colors
     const getGradientColors = () => {
         if (isOverGoal) {
-            return ['#FF6B6B', '#FF4757', '#EE5A6F']; // Red gradient - over goal
+            return createGradient(errorColor); // Red - over goal
         } else if (progress === 100) {
-            return ['#66BB6A', '#4CAF50', '#43A047']; // Green gradient - goal met
+            return createGradient(successColor); // Green - goal met
         } else {
-            return ['#42A5F5', '#2196F3', '#1E88E5']; // Blue gradient - on track
+            return createGradient(infoColor); // Blue - on track
         }
     };
 
