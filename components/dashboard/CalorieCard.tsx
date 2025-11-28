@@ -1,5 +1,6 @@
 
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, StyleSheet, Animated, Easing, Platform } from "react-native"
+import { useRef, useEffect } from "react";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 interface CalorieCardProps {
@@ -18,6 +19,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     const cardColor = useThemeColor({}, 'card');
     const textColor = useThemeColor({}, 'text');
     const primaryColor = useThemeColor({}, 'primary');
+    const mutedColor = useThemeColor({}, 'muted');
 
     const getProgressColor = () => {
         if (progress > 100) return '#F44336'; // Red
@@ -25,58 +27,120 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
         return '#4CAF50'; // Green
     };
 
+    // Progress animation
+    const animatedWidth = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+        Animated.timing(animatedWidth, {
+            toValue: Math.min(progress, 100),
+            duration: 600,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: false,
+        }).start();
+    }, [progress]);
+
+    const barColor = isOverGoal
+        ? "#F44336"
+        : progress > 90
+            ? "#FF9800"
+            : "#4CAF50";
+
 
     return (
-        <View style={[styles.container, { backgroundColor: cardColor }]} accessibilityLabel={`Calories: ${consumed} of ${goal} consumed`}>
+        <View style={[styles.container, { backgroundColor: cardColor }, styles.shadow]} accessibilityLabel={`Calories: ${consumed} of ${goal} consumed`}>
             {/* Title */}
-            <Text style={[styles.title, { color: textColor }]}>Today's Calories</Text>
+            <Text style={[styles.title, { color: mutedColor }]}>Today's Calories</Text>
 
             {/* Numbers: consumed / goal */}
-            <Text style={[styles.numbers, { color: textColor }]}>
-                {consumed.toLocaleString()} / {goal.toLocaleString()}
-            </Text>
+            <View style={styles.row}>
+                <Text style={[styles.consumed, { color: textColor }]}>
+                    {consumed.toLocaleString()}
+                </Text>
+                <Text style={[styles.goal, { color: mutedColor }]}>
+                    / {goal.toLocaleString()}
+                </Text>
+            </View>
 
             {/* Progress Bar */}
-            <View style={styles.progressBarBackground}>
-                <View style={[styles.progressBarFill, { width: `${Math.min(progress, 100)}%`, backgroundColor: getProgressColor() }]} />
+            <View style={[styles.progressBarBackground, { backgroundColor: mutedColor + "33" }]}>
+                <Animated.View
+                    style={[
+                        styles.progressBarFill,
+                        {
+                            backgroundColor: barColor,
+                            width: animatedWidth.interpolate({
+                                inputRange: [0, 100],
+                                outputRange: ["0%", "100%"],
+                            }),
+                        },
+                    ]}
+                />
             </View>
 
             {/* Remaining */}
-            <Text style={[styles.remaining, { color: textColor }]}>
-                {isOverGoal ? `${displayRemaining.toLocaleString()} over goal` : `${displayRemaining.toLocaleString()} remaining`}
+            <Text
+                style={[
+                    styles.remaining,
+                    { color: isOverGoal ? "#F44336" : mutedColor },
+                ]}
+            >
+                {isOverGoal
+                    ? `${displayRemaining.toLocaleString()} over goal`
+                    : `${displayRemaining.toLocaleString()} remaining`}
             </Text>
         </View>
     );
 }
 
+
 const styles = StyleSheet.create({
-    progressBarBackground: {
-        backgroundColor: '#E0E0E0',
-        borderRadius: 12,
-        overflow: 'hidden',
-        height: 24,
-        marginBottom: 8,
-    },
-    progressBarFill: {
-        height: '100%',
-    },
     container: {
-        padding: 16,
-        borderRadius: 12,
+        padding: 20,
+        borderRadius: 16,
         marginBottom: 16,
     },
+    shadow: Platform.select({
+        ios: {
+            shadowColor: "#000",
+            shadowOpacity: 0.08,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 4 },
+        },
+        android: {
+            elevation: 3,
+        },
+        default: {},
+    }),
     title: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        fontSize: 14,
         marginBottom: 8,
     },
-    numbers: {
-        fontSize: 24,
-        fontWeight: '600',
-        marginBottom: 8,
+    row: {
+        flexDirection: "row",
+        alignItems: "flex-end",
+        marginBottom: 12,
+    },
+    consumed: {
+        fontSize: 36,
+        fontWeight: "700",
+        marginRight: 4,
+    },
+    goal: {
+        fontSize: 18,
+        opacity: 0.7,
+    },
+    progressBarBackground: {
+        height: 10,
+        borderRadius: 6,
+        overflow: "hidden",
+        marginBottom: 10,
+    },
+    progressBarFill: {
+        height: "100%",
+        borderRadius: 6,
     },
     remaining: {
         fontSize: 14,
-        opacity: 0.7,
+        fontWeight: "500",
     },
 });
