@@ -93,7 +93,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                 <View style={styles.statusBadge}>
                     <View style={[styles.statusDot, { backgroundColor: gradientColors[1] }]} />
                     <Text style={[styles.statusText, { color: mutedColor }]}>
-                        {isOverGoal ? 'OVER' : progress > 90 ? 'CLOSE' : 'ON TRACK'}
+                        {isOverGoal ? 'OVER' : progress === 100 ? 'GOAL MET' : progress > 90 ? 'CLOSE' : 'ON TRACK'}
                     </Text>
                 </View>
             </View>
