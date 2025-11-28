@@ -52,13 +52,11 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     // Determine gradient colors based on progress
     const getGradientColors = () => {
         if (isOverGoal) {
-            return ['#FF6B6B', '#FF4757', '#EE5A6F']; // Red gradient
-        } else if (progress > 90) {
-            return ['#FFB84D', '#FFA726', '#FF9800']; // Amber warning
-        } else if (progress > 70) {
-            return ['#66BB6A', '#4CAF50', '#43A047']; // Green
+            return ['#FF6B6B', '#FF4757', '#EE5A6F']; // Red gradient - over goal
+        } else if (progress === 100) {
+            return ['#66BB6A', '#4CAF50', '#43A047']; // Green gradient - goal met
         } else {
-            return ['#42A5F5', '#2196F3', '#1E88E5']; // Cool blue
+            return ['#42A5F5', '#2196F3', '#1E88E5']; // Blue gradient - on track
         }
     };
 

@@ -16,7 +16,7 @@ const Dashboard = () => {
   const secondaryColor = useThemeColor({}, 'secondary');
   const borderColor = useThemeColor({}, 'border');
 
-  const [caloriesConsumed, setCaloriesConsumed] = useState(1250);
+  const [caloriesConsumed, setCaloriesConsumed] = useState(3199);
   const [waterIntake, setWaterIntake] = useState(6);
   const [steps] = useState(7495);
   const [weight] = useState(68.5);
