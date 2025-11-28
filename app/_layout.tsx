@@ -115,7 +115,15 @@ export default function RootLayout() {
       return;
     }
 
-    // GUARD 4: Redirect authenticated users away from auth pages
+    // GUARD 4: Redirect authenticated users away from home page
+    // If user is logged in with completed onboarding, redirect to dashboard
+    if (user && profile?.onboarding_completed && isHome) {
+      console.log('✅ Route Guard: Already authenticated, redirected to dashboard');
+      router.replace('/(tabs)/dashboard');
+      return;
+    }
+
+    // GUARD 5: Redirect authenticated users away from auth pages
     // If user is logged in, they shouldn't see signin/signup
     if (user && profile?.onboarding_completed && inAuthGroup) {
       console.log('✅ Route Guard: Already authenticated, redirected to dashboard');
