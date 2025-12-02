@@ -21,7 +21,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     const cardColor = useThemeColor({}, "card");
     const textColor = useThemeColor({}, "text");
     const mutedColor = useThemeColor({}, "muted");
-    
+
     const successColor = useThemeColor({}, "success");
     const errorColor = useThemeColor({}, "error");
     const infoColor = useThemeColor({}, "info");
@@ -54,9 +54,29 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
 
     // Helper to create gradient variations from a base color
     const createGradient = (baseColor: string) => {
-        // For now, use the same color for all gradient stops
-        // Could be enhanced to generate lighter/darker variations
-        return [baseColor, baseColor, baseColor];
+        // Parse hex color to RGB
+        const hex = baseColor.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+
+        // Create lighter and darker variations
+        const lighten = (amount: number) => {
+            const nr = Math.min(255, r + amount);
+            const ng = Math.min(255, g + amount);
+            const nb = Math.min(255, b + amount);
+            return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+        };
+
+        const darken = (amount: number) => {
+            const nr = Math.max(0, r - amount);
+            const ng = Math.max(0, g - amount);
+            const nb = Math.max(0, b - amount);
+            return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+        };
+
+        // Return gradient array: [lighter, base, darker]
+        return [lighten(20), baseColor, darken(15)];
     };
 
     // Determine gradient colors based on progress using theme colors
