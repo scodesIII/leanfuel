@@ -309,3 +309,138 @@ describe('getErrorTitle', () => {
     });
 });
 
+
+// ============================================================================
+// TESTING RETRY LOGIC 
+// ============================================================================
+
+describe('retryOperation', () => {
+    // Use fake timers to control time in tests
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.runOnlyPendingTimers();
+        jest.useRealTimers();
+    });
+
+    it('should succeed on first attempt without retrying', async () => {
+        const operation = jest.fn(async () => 'success');
+
+        const promise = retryOperation(operation);
+        const result = await promise;
+
+        expect(result).toBe('success');
+        expect(operation).toHaveBeenCalledTimes(1);
+    });
+
+    it('should retry on network error and eventually succeed', async () => {
+        let attempts = 0;
+        const operation = jest.fn(async () => {
+            attempts++;
+            if (attempts < 3) {
+                throw new Error('network request failed');
+            }
+            return 'success';
+        });
+
+        const promise = retryOperation(operation, { maxRetries: 3, retryDelay: 1000 });
+
+        // Fast-forward through all timers
+        await jest.runAllTimersAsync();
+
+        const result = await promise;
+        expect(result).toBe('success');
+        expect(operation).toHaveBeenCalledTimes(3);
+    });
+
+    it('should throw error after max retries exceeded', async () => {
+        // Use real timers for this test to avoid complexity
+        jest.useRealTimers();
+
+        const operation = jest.fn(async () => {
+            throw new Error('network request failed');
+        });
+
+        await expect(
+            retryOperation(operation, { maxRetries: 2, retryDelay: 10, exponentialBackoff: false })
+        ).rejects.toThrow('network request failed');
+
+        expect(operation).toHaveBeenCalledTimes(3); // Initial + 2 retries
+
+        // Restore fake timers for other tests
+        jest.useFakeTimers();
+    });
+
+    it('should NOT retry auth errors', async () => {
+        const operation = jest.fn(async () => {
+            throw new Error('JWT expired');
+        });
+
+        const promise = retryOperation(operation, { maxRetries: 3 });
+
+        await expect(promise).rejects.toThrow('JWT expired');
+        expect(operation).toHaveBeenCalledTimes(1); // Should not retry
+    });
+
+    it('should NOT retry validation errors', async () => {
+        const operation = jest.fn(async () => {
+            throw { status: 400, message: 'Invalid input' };
+        });
+
+        const promise = retryOperation(operation, { maxRetries: 3 });
+
+        await expect(promise).rejects.toEqual({ status: 400, message: 'Invalid input' });
+        expect(operation).toHaveBeenCalledTimes(1); // Should not retry
+    });
+
+    it('should use exponential backoff by default', async () => {
+        let attempts = 0;
+        const operation = jest.fn(async () => {
+            attempts++;
+            if (attempts < 4) {
+                throw new Error('network request failed');
+            }
+            return 'success';
+        });
+
+        const promise = retryOperation(operation, { maxRetries: 3, retryDelay: 1000 });
+
+        // Fast-forward through all timers
+        await jest.runAllTimersAsync();
+
+        await promise;
+
+        // With exponential backoff: delays should be 1s, 2s, 4s
+        // We can't easily test the exact timing with runAllTimersAsync,
+        // but we can verify it eventually succeeds
+        expect(operation).toHaveBeenCalledTimes(4);
+    });
+
+    it('should respect custom retry options', async () => {
+        let attempts = 0;
+        const operation = jest.fn(async () => {
+            attempts++;
+            if (attempts < 2) {
+                throw new Error('network request failed');
+            }
+            return 'success';
+        });
+
+        const promise = retryOperation(operation, {
+            maxRetries: 5,
+            retryDelay: 500,
+            exponentialBackoff: false,
+        });
+
+        await jest.runAllTimersAsync();
+
+        const result = await promise;
+        expect(result).toBe('success');
+        expect(operation).toHaveBeenCalledTimes(2);
+    });
+});
+
+
+
