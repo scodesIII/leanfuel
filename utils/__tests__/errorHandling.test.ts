@@ -125,3 +125,43 @@ describe('isAuthError', () => {
     });
 });
 
+
+describe('isValidationError', () => {
+    it('should return true for 400 status code', () => {
+        const error = { status: 400, message: 'Bad request' };
+        expect(isValidationError(error)).toBe(true);
+    });
+
+    it('should return true for statusCode 400', () => {
+        const error = { statusCode: 400, message: 'Bad request' };
+        expect(isValidationError(error)).toBe(true);
+    });
+
+    it('should return true for "invalid" in error message', () => {
+        const error = new Error('Invalid email format');
+        expect(isValidationError(error)).toBe(true);
+    });
+
+    it('should return true for "validation" in error message', () => {
+        const error = new Error('Validation failed');
+        expect(isValidationError(error)).toBe(true);
+    });
+
+    it('should return false for network errors', () => {
+        const error = new Error('network request failed');
+        expect(isValidationError(error)).toBe(false);
+    });
+
+    it('should return false for auth errors', () => {
+        const error = { status: 401, message: 'Unauthorized' };
+        expect(isValidationError(error)).toBe(false);
+    });
+
+    it('should return false for null input', () => {
+        expect(isValidationError(null)).toBe(false);
+    });
+
+    it('should return false for undefined input', () => {
+        expect(isValidationError(undefined)).toBe(false);
+    });
+});
