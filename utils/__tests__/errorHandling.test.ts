@@ -74,3 +74,54 @@ describe('isNetworkError', () => {
     });
 });
 
+
+describe('isAuthError', () => {
+    it('should return true for JWT error messages', () => {
+        const error = new Error('JWT expired');
+        expect(isAuthError(error)).toBe(true);
+    });
+
+    it('should return true for session error messages', () => {
+        const error = new Error('Session expired');
+        expect(isAuthError(error)).toBe(true);
+    });
+
+    it('should return true for unauthorized error messages', () => {
+        const error = new Error('Unauthorized access');
+        expect(isAuthError(error)).toBe(true);
+    });
+
+    it('should return true for "not authenticated" error messages', () => {
+        const error = new Error('User not authenticated');
+        expect(isAuthError(error)).toBe(true);
+    });
+
+    it('should return true for 401 status code', () => {
+        const error = { status: 401, message: 'Unauthorized' };
+        expect(isAuthError(error)).toBe(true);
+    });
+
+    it('should return true for statusCode 401', () => {
+        const error = { statusCode: 401, message: 'Unauthorized' };
+        expect(isAuthError(error)).toBe(true);
+    });
+
+    it('should return false for network errors', () => {
+        const error = new Error('network request failed');
+        expect(isAuthError(error)).toBe(false);
+    });
+
+    it('should return false for validation errors', () => {
+        const error = { status: 400, message: 'Invalid input' };
+        expect(isAuthError(error)).toBe(false);
+    });
+
+    it('should return false for null input', () => {
+        expect(isAuthError(null)).toBe(false);
+    });
+
+    it('should return false for undefined input', () => {
+        expect(isAuthError(undefined)).toBe(false);
+    });
+});
+
