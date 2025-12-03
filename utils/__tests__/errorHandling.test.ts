@@ -165,3 +165,45 @@ describe('isValidationError', () => {
         expect(isValidationError(undefined)).toBe(false);
     });
 });
+
+
+describe('isServerError', () => {
+    it('should return true for 500 status code', () => {
+        const error = { status: 500, message: 'Internal server error' };
+        expect(isServerError(error)).toBe(true);
+    });
+
+    it('should return true for 503 status code', () => {
+        const error = { status: 503, message: 'Service unavailable' };
+        expect(isServerError(error)).toBe(true);
+    });
+
+    it('should return true for 599 status code (boundary)', () => {
+        const error = { status: 599, message: 'Server error' };
+        expect(isServerError(error)).toBe(true);
+    });
+
+    it('should return false for 499 status code (just below 500)', () => {
+        const error = { status: 499, message: 'Client closed request' };
+        expect(isServerError(error)).toBe(false);
+    });
+
+    it('should return false for 600 status code (above 5xx range)', () => {
+        const error = { status: 600, message: 'Unknown' };
+        expect(isServerError(error)).toBe(false);
+    });
+
+    it('should return false for 400 status code', () => {
+        const error = { status: 400, message: 'Bad request' };
+        expect(isServerError(error)).toBe(false);
+    });
+
+    it('should return false for null input', () => {
+        expect(isServerError(null)).toBe(false);
+    });
+
+    it('should return false for undefined input', () => {
+        expect(isServerError(undefined)).toBe(false);
+    });
+});
+
