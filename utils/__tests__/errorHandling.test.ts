@@ -207,3 +207,105 @@ describe('isServerError', () => {
     });
 });
 
+
+// ============================================================================
+// TESTING ERROR MESSAGE FORMATTING
+// ============================================================================
+
+describe('getErrorMessage', () => {
+    it('should return network error message for network errors', () => {
+        const error = new Error('network request failed');
+        const message = getErrorMessage(error);
+        expect(message).toBe('No internet connection. Please check your network and try again.');
+    });
+
+    it('should return session expired message for JWT errors', () => {
+        const error = new Error('JWT expired');
+        const message = getErrorMessage(error);
+        expect(message).toBe('Your session has expired. Please sign in again.');
+    });
+
+    it('should return invalid credentials message', () => {
+        const error = new Error('Invalid login credentials');
+        const message = getErrorMessage(error);
+        expect(message).toBe('Invalid email or password.');
+    });
+
+    it('should return user-friendly message for "User already registered"', () => {
+        const error = new Error('User already registered');
+        const message = getErrorMessage(error);
+        expect(message).toBe('An account with this email already exists.');
+    });
+
+    it('should return server error message for 5xx errors', () => {
+        const error = { status: 500, message: 'Internal server error' };
+        const message = getErrorMessage(error);
+        expect(message).toBe('Server error. Please try again later.');
+    });
+
+    it('should return validation error message for 400 errors', () => {
+        const error = { status: 400, message: 'Bad request' };
+        const message = getErrorMessage(error);
+        expect(message).toBe('Bad request');
+    });
+
+    it('should return default message for unknown errors', () => {
+        const error = new Error('Something weird happened');
+        const message = getErrorMessage(error);
+        expect(message).toBe('Something went wrong. Please try again.');
+    });
+
+    it('should handle null input gracefully', () => {
+        const message = getErrorMessage(null);
+        expect(message).toBe('An unexpected error occurred');
+    });
+
+    it('should handle undefined input gracefully', () => {
+        const message = getErrorMessage(undefined);
+        expect(message).toBe('An unexpected error occurred');
+    });
+
+    it('should map all common Supabase errors', () => {
+        const testCases = [
+            { input: 'Email not confirmed', expected: 'Please verify your email address before signing in.' },
+            { input: 'Password should be at least 6 characters', expected: 'Password must be at least 6 characters long.' },
+            { input: 'Unable to validate email address: invalid format', expected: 'Please enter a valid email address.' },
+            { input: 'User not found', expected: 'No account found with this email address.' },
+            { input: 'Email rate limit exceeded', expected: 'Too many attempts. Please try again later.' },
+        ];
+
+        testCases.forEach(({ input, expected }) => {
+            const error = new Error(input);
+            const message = getErrorMessage(error);
+            expect(message).toBe(expected);
+        });
+    });
+});
+
+describe('getErrorTitle', () => {
+    it('should return "No Internet Connection" for network errors', () => {
+        const error = new Error('network request failed');
+        expect(getErrorTitle(error)).toBe('No Internet Connection');
+    });
+
+    it('should return "Session Expired" for auth errors', () => {
+        const error = new Error('JWT expired');
+        expect(getErrorTitle(error)).toBe('Session Expired');
+    });
+
+    it('should return "Server Error" for 5xx errors', () => {
+        const error = { status: 500, message: 'Internal server error' };
+        expect(getErrorTitle(error)).toBe('Server Error');
+    });
+
+    it('should return "Invalid Input" for validation errors', () => {
+        const error = { status: 400, message: 'Bad request' };
+        expect(getErrorTitle(error)).toBe('Invalid Input');
+    });
+
+    it('should return "Error" for unknown errors', () => {
+        const error = new Error('Something weird');
+        expect(getErrorTitle(error)).toBe('Error');
+    });
+});
+
