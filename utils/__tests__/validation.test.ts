@@ -70,6 +70,56 @@ describe('validateOnboardingData', () => {
         });
     });
 
+
+    // ==========================================================================
+    // GOAL VALIDATION
+    // ==========================================================================
+
+    describe('Goal Validation', () => {
+        it('should reject empty goal', () => {
+            const data = createValidData();
+            data.goal = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.goal).toBe('Please select a valid goal');
+        });
+
+        it('should reject invalid goal', () => {
+            const data = createValidData();
+            data.goal = 'invalid' as any;
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.goal).toBe('Please select a valid goal');
+        });
+
+        it('should accept "lose" as valid goal', () => {
+            const data = createValidData();
+            data.goal = 'lose';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.goal).toBeUndefined();
+        });
+
+        it('should accept "maintain" as valid goal', () => {
+            const data = createValidData();
+            data.goal = 'maintain';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.goal).toBeUndefined();
+        });
+
+        it('should accept "gain" as valid goal', () => {
+            const data = createValidData();
+            data.goal = 'gain';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.goal).toBeUndefined();
+        });
+    });
+
+    
     
 });
 
