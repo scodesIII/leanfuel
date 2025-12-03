@@ -25,6 +25,55 @@ const createValidData = (): OnboardingData => ({
 });
 
 
+// ============================================================================
+// TESTING validateOnboardingData() - COMPLETE VALIDATION
+// ============================================================================
+
+describe('validateOnboardingData', () => {
+    describe('Valid Data', () => {
+        it('should validate completely valid data', () => {
+            const data = createValidData();
+            const result = validateOnboardingData(data);
+
+            expect(result.isValid).toBe(true);
+            expect(result.errors).toEqual({});
+        });
+
+        it('should validate weight loss goal with correct target', () => {
+            const data = createValidData();
+            data.goal = 'lose';
+            data.weight = '80';
+            data.targetWeight = '70';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(true);
+        });
+
+        it('should validate weight gain goal with correct target', () => {
+            const data = createValidData();
+            data.goal = 'gain';
+            data.weight = '70';
+            data.targetWeight = '80';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(true);
+        });
+
+        it('should validate maintain goal with any target weight', () => {
+            const data = createValidData();
+            data.goal = 'maintain';
+            data.weight = '75';
+            data.targetWeight = '75';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(true);
+        });
+    });
+
+    
+});
+
+
 
 // ============================================================================
 // TESTING validateField() - SINGLE FIELD VALIDATION
