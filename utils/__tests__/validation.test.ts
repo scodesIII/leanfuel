@@ -507,7 +507,106 @@ describe('validateOnboardingData', () => {
     });
 
 
-    
+    // ==========================================================================
+    // LOGICAL VALIDATION (Cross-field validation)
+    // ==========================================================================
+
+    describe('Logical Validation', () => {
+        it('should reject lose goal when target weight >= current weight', () => {
+            const data = createValidData();
+            data.goal = 'lose';
+            data.weight = '70';
+            data.targetWeight = '80';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe(
+                'Target weight should be less than current weight for weight loss'
+            );
+        });
+
+        it('should reject lose goal when target weight equals current weight', () => {
+            const data = createValidData();
+            data.goal = 'lose';
+            data.weight = '75';
+            data.targetWeight = '75';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe(
+                'Target weight should be less than current weight for weight loss'
+            );
+        });
+
+        it('should reject gain goal when target weight <= current weight', () => {
+            const data = createValidData();
+            data.goal = 'gain';
+            data.weight = '80';
+            data.targetWeight = '70';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe(
+                'Target weight should be more than current weight for weight gain'
+            );
+        });
+
+        it('should reject gain goal when target weight equals current weight', () => {
+            const data = createValidData();
+            data.goal = 'gain';
+            data.weight = '75';
+            data.targetWeight = '75';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe(
+                'Target weight should be more than current weight for weight gain'
+            );
+        });
+
+        it('should allow maintain goal with any target weight', () => {
+            const data = createValidData();
+            data.goal = 'maintain';
+            data.weight = '75';
+            data.targetWeight = '80'; // Different from current
+
+            const result = validateOnboardingData(data);
+            // Should not have logical validation error for maintain goal
+            expect(result.errors.targetWeight).toBeUndefined();
+        });
+    });
+
+    // ==========================================================================
+    // MULTIPLE ERRORS
+    // ==========================================================================
+
+    describe('Multiple Errors', () => {
+        it('should return all validation errors when multiple fields are invalid', () => {
+            const data: OnboardingData = {
+                goal: '',
+                activityLevel: '',
+                age: '',
+                gender: '',
+                weight: '',
+                height: '',
+                targetWeight: '',
+                timeframe: '',
+                dietaryPreferences: [],
+            };
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(Object.keys(result.errors).length).toBeGreaterThan(5);
+            expect(result.errors.goal).toBeDefined();
+            expect(result.errors.activityLevel).toBeDefined();
+            expect(result.errors.age).toBeDefined();
+            expect(result.errors.gender).toBeDefined();
+            expect(result.errors.weight).toBeDefined();
+            expect(result.errors.height).toBeDefined();
+            expect(result.errors.targetWeight).toBeDefined();
+            expect(result.errors.timeframe).toBeDefined();
+        });
+    });
     
 });
 
