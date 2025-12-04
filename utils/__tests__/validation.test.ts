@@ -222,6 +222,56 @@ describe('validateOnboardingData', () => {
         });
     });
 
+
+    // ==========================================================================
+    // GENDER VALIDATION
+    // ==========================================================================
+
+    describe('Gender Validation', () => {
+        it('should reject empty gender', () => {
+            const data = createValidData();
+            data.gender = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.gender).toBe('Please select a valid gender');
+        });
+
+        it('should reject invalid gender', () => {
+            const data = createValidData();
+            data.gender = 'invalid' as any;
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.gender).toBe('Please select a valid gender');
+        });
+
+        it('should accept "male" as valid gender', () => {
+            const data = createValidData();
+            data.gender = 'male';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.gender).toBeUndefined();
+        });
+
+        it('should accept "female" as valid gender', () => {
+            const data = createValidData();
+            data.gender = 'female';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.gender).toBeUndefined();
+        });
+
+        it('should accept "other" as valid gender', () => {
+            const data = createValidData();
+            data.gender = 'other';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.gender).toBeUndefined();
+        });
+    });
+
+    
     
 });
 
