@@ -29,9 +29,11 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
 
     // Get status text based on progress
     const getStatus = () => {
-        if (isOverGoal) return 'OVER';
+        if (progress === 0) return 'NOT STARTED';
+        if (progress <= 10) return 'GETTING STARTED';
+        if (progress > 90 && progress < 100) return 'CLOSE';
         if (progress === 100) return 'GOAL MET';
-        if (progress > 90) return 'CLOSE';
+        if (isOverGoal) return 'OVER';
         return 'ON TRACK';
     };
 
