@@ -27,6 +27,29 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
             ? Gradients.success
             : Gradients.info;
 
+    // Get status text based on progress
+    const getStatus = () => {
+        if (isOverGoal) return 'OVER';
+        if (progress === 100) return 'GOAL MET';
+        if (progress > 90) return 'CLOSE';
+        return 'ON TRACK';
+    };
+
+    const status = getStatus();
+
+    // Get milestone message based on progress
+    const getMilestone = () => {
+        if (progress >= 100 && !isOverGoal) {
+            return { text: 'Goal reached! 🎉', color: Gradients.success[1] };
+        }
+        if (progress >= 45 && progress <= 55) {
+            return { text: 'Halfway there! 🎯', color: gradientColors[1] };
+        }
+        return null;
+    };
+
+    const milestone = getMilestone();
+
     return (
         <View
             style={[
@@ -52,7 +75,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                 <View style={styles.statusBadge}>
                     <View style={[styles.statusDot, { backgroundColor: gradientColors[1] }]} />
                     <Text style={[styles.statusText, { color: mutedColor }]}>
-                        {isOverGoal ? 'OVER' : progress === 100 ? 'GOAL MET' : progress > 90 ? 'CLOSE' : 'ON TRACK'}
+                        {status}
                     </Text>
                 </View>
             </View>
@@ -102,21 +125,13 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                     </Text>
                 </View>
 
-                {/* Milestone indicator */}
-                {progress >= 45 && progress <= 55 && (
-                    <View style={styles.milestoneContainer}>
-                        <View style={[styles.milestoneDot, { backgroundColor: gradientColors[1] }]} />
-                        <Text style={[styles.milestoneText, { color: mutedColor }]}>
-                            Halfway there! 🎯
-                        </Text>
-                    </View>
-                )}
 
-                {progress >= 100 && !isOverGoal && (
+                {/* Milestone indicator */}
+                {milestone && (
                     <View style={styles.milestoneContainer}>
-                        <View style={[styles.milestoneDot, { backgroundColor: '#4CAF50' }]} />
+                        <View style={[styles.milestoneDot, { backgroundColor: milestone.color }]} />
                         <Text style={[styles.milestoneText, { color: mutedColor }]}>
-                            Goal reached! 🎉
+                            {milestone.text}
                         </Text>
                     </View>
                 )}
