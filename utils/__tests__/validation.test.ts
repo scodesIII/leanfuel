@@ -155,9 +155,72 @@ describe('validateOnboardingData', () => {
         });
     });
 
-
-
     
+    // ==========================================================================
+    // AGE VALIDATION
+    // ==========================================================================
+
+    describe('Age Validation', () => {
+        it('should reject empty age', () => {
+            const data = createValidData();
+            data.age = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.age).toBe('Age is required');
+        });
+
+        it('should reject non-numeric age', () => {
+            const data = createValidData();
+            data.age = 'abc';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.age).toBe('Age is required');
+        });
+
+        it('should reject age below 13', () => {
+            const data = createValidData();
+            data.age = '12';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.age).toBe('You must be at least 13 years old');
+        });
+
+        it('should accept age of 13 (boundary)', () => {
+            const data = createValidData();
+            data.age = '13';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.age).toBeUndefined();
+        });
+
+        it('should accept age of 120 (boundary)', () => {
+            const data = createValidData();
+            data.age = '120';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.age).toBeUndefined();
+        });
+
+        it('should reject age above 120', () => {
+            const data = createValidData();
+            data.age = '121';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.age).toBe('Please enter a valid age');
+        });
+
+        it('should accept valid age in middle range', () => {
+            const data = createValidData();
+            data.age = '30';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.age).toBeUndefined();
+        });
+    });
 
     
 });
