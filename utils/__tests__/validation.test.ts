@@ -405,6 +405,72 @@ describe('validateOnboardingData', () => {
             expect(result.errors.height).toBeUndefined();
         });
     });
+
+
+    // ==========================================================================
+    // TARGET WEIGHT VALIDATION
+    // ==========================================================================
+
+    describe('Target Weight Validation', () => {
+        it('should reject empty target weight', () => {
+            const data = createValidData();
+            data.targetWeight = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe('Target weight is required');
+        });
+
+        it('should reject non-numeric target weight', () => {
+            const data = createValidData();
+            data.targetWeight = 'abc';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe('Target weight is required');
+        });
+
+        it('should reject target weight below 20 kg', () => {
+            const data = createValidData();
+            data.targetWeight = '19';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe('Target weight must be at least 20 kg');
+        });
+
+        it('should accept target weight of 20 kg (boundary)', () => {
+            const data = createValidData();
+            data.targetWeight = '20';
+            data.weight = '80'; // Ensure valid for lose goal
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.targetWeight).toBeUndefined();
+        });
+
+        it('should accept target weight of 500 kg (boundary)', () => {
+            const data = createValidData();
+            data.goal = 'gain';
+            data.weight = '450';
+            data.targetWeight = '500';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.targetWeight).toBeUndefined();
+        });
+
+        it('should reject target weight above 500 kg', () => {
+            const data = createValidData();
+            data.goal = 'gain'; // Use gain to avoid logical validation conflict
+            data.weight = '450';
+            data.targetWeight = '501';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.targetWeight).toBe('Target weight must be less than 500 kg');
+        });
+    });
+
+   
     
 });
 
