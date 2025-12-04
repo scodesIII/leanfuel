@@ -103,7 +103,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                 </View>
 
                 {/* Milestone indicator */}
-                {progress >= 50 && progress < 100 && (
+                {progress >= 45 && progress <= 55 && (
                     <View style={styles.milestoneContainer}>
                         <View style={[styles.milestoneDot, { backgroundColor: gradientColors[1] }]} />
                         <Text style={[styles.milestoneText, { color: mutedColor }]}>
