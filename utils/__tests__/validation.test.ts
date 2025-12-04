@@ -271,6 +271,77 @@ describe('validateOnboardingData', () => {
         });
     });
 
+
+    // ==========================================================================
+    // WEIGHT VALIDATION
+    // ==========================================================================
+
+    describe('Weight Validation', () => {
+        it('should reject empty weight', () => {
+            const data = createValidData();
+            data.weight = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.weight).toBe('Weight is required');
+        });
+
+        it('should reject non-numeric weight', () => {
+            const data = createValidData();
+            data.weight = 'abc';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.weight).toBe('Weight is required');
+        });
+
+        it('should reject weight below 20 kg', () => {
+            const data = createValidData();
+            data.weight = '19';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.weight).toBe('Weight must be at least 20 kg');
+        });
+
+        it('should accept weight of 20 kg (boundary)', () => {
+            const data = createValidData();
+            data.weight = '20';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.weight).toBeUndefined();
+        });
+
+        it('should accept weight of 500 kg (boundary)', () => {
+            const data = createValidData();
+            data.weight = '500';
+            data.targetWeight = '450'; // Adjust target for lose goal
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.weight).toBeUndefined();
+        });
+
+        it('should reject weight above 500 kg', () => {
+            const data = createValidData();
+            data.weight = '501';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.weight).toBe('Weight must be less than 500 kg');
+        });
+
+        it('should accept decimal weight values', () => {
+            const data = createValidData();
+            data.weight = '75.5';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.weight).toBeUndefined();
+        });
+    });
+
+    
+
+
     
     
 });
