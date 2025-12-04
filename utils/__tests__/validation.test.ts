@@ -120,6 +120,45 @@ describe('validateOnboardingData', () => {
     });
 
     
+    // ==========================================================================
+    // ACTIVITY LEVEL VALIDATION
+    // ==========================================================================
+
+    describe('Activity Level Validation', () => {
+        it('should reject empty activity level', () => {
+            const data = createValidData();
+            data.activityLevel = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.activityLevel).toBe('Please select a valid activity level');
+        });
+
+        it('should reject invalid activity level', () => {
+            const data = createValidData();
+            data.activityLevel = 'invalid' as any;
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.activityLevel).toBe('Please select a valid activity level');
+        });
+
+        const validActivityLevels = ['sedentary', 'light', 'moderate', 'very', 'extra'];
+        validActivityLevels.forEach((level) => {
+            it(`should accept "${level}" as valid activity level`, () => {
+                const data = createValidData();
+                data.activityLevel = level as any;
+
+                const result = validateOnboardingData(data);
+                expect(result.errors.activityLevel).toBeUndefined();
+            });
+        });
+    });
+
+
+
+    
+
     
 });
 
