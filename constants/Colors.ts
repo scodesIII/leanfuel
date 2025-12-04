@@ -90,3 +90,55 @@ export const hexToRgba = (hex: string, alpha: number) => {
 
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
+
+/**
+ * Creates a gradient array from a base color
+ * Returns [lighter, base, darker] for use in gradients
+ */
+export const createGradient = (baseColor: string): [string, string, string] => {
+  // Parse hex color to RGB
+  const hex = baseColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Create lighter and darker variations
+  const lighten = (amount: number) => {
+    const nr = Math.min(255, r + amount);
+    const ng = Math.min(255, g + amount);
+    const nb = Math.min(255, b + amount);
+    return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+  };
+
+  const darken = (amount: number) => {
+    const nr = Math.max(0, r - amount);
+    const ng = Math.max(0, g - amount);
+    const nb = Math.max(0, b - amount);
+    return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
+  };
+
+  // Return gradient array: [lighter, base, darker]
+  return [lighten(20), baseColor, darken(15)];
+};
+
+/**
+ * Predefined gradient sets for common use cases
+ * Each gradient is [light, base, dark] for use in LinearGradient components
+ */
+export const Gradients = {
+  // Status gradients (light mode)
+  success: createGradient('#10b981'),
+  error: createGradient('#ef4444'),
+  warning: createGradient('#f59e0b'),
+  info: createGradient('#3b82f6'),
+
+  // Brand gradients
+  primary: createGradient('#3c9d5c'),
+  secondary: createGradient('#2d7dd2'),
+  accent: createGradient('#ff6b6b'),
+
+  // Nutritional gradients
+  protein: createGradient('#4ade80'),
+  carbs: createGradient('#facc15'),
+  fat: createGradient('#fb923c'),
+};
