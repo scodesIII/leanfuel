@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
+        marginVertical: 20,
     },
 
     ring: {

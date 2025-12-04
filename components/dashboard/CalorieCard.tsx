@@ -59,21 +59,23 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
 
 
             {/* Apple Fitness Ring */}
-            <ProgressRing progress={progress} size={180} gradientColors={gradientColors}>
-                {/* Center content - Noom-style large numbers */}
-                <View style={styles.ringCenter}>
-                    <Text style={[styles.mainNumber, { color: textColor }]}>
-                        {consumed.toLocaleString()}
-                    </Text>
-                    <View style={styles.divider} />
-                    <Text style={[styles.goalNumber, { color: mutedColor }]}>
-                        {goal.toLocaleString()}
-                    </Text>
-                    <Text style={[styles.unit, { color: mutedColor }]}>
-                        kcal
-                    </Text>
-                </View>
-            </ProgressRing>
+            <View style={styles.ringWrapper}>
+                <ProgressRing progress={progress} size={180} gradientColors={gradientColors}>
+                    {/* Center content - Noom-style large numbers */}
+                    <View style={styles.ringCenter}>
+                        <Text style={[styles.mainNumber, { color: textColor }]}>
+                            {consumed.toLocaleString()}
+                        </Text>
+                        <View style={styles.divider} />
+                        <Text style={[styles.goalNumber, { color: mutedColor }]}>
+                            {goal.toLocaleString()}
+                        </Text>
+                        <Text style={[styles.unit, { color: mutedColor }]}>
+                            kcal
+                        </Text>
+                    </View>
+                </ProgressRing>
+            </View>
 
             {/* Progress percentage badge */}
             <View style={styles.progressBadge}>
@@ -197,6 +199,11 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: '600',
         letterSpacing: 0.8,
+    },
+
+    ringWrapper: {
+        alignItems: 'center',
+        width: '100%',
     },
 
     ringCenter: {
