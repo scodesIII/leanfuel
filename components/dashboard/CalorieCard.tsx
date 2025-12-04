@@ -102,21 +102,6 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                     </Text>
                 </View>
 
-                {/* Micro progress bar */}
-                <View style={styles.microBar}>
-                    <View style={[styles.microBarBg, { backgroundColor: 'rgba(0,0,0,0.05)' }]}>
-                        <View
-                            style={[
-                                styles.microBarFill,
-                                {
-                                    width: `${Math.min(progress, 100)}%`,
-                                    backgroundColor: gradientColors[1],
-                                }
-                            ]}
-                        />
-                    </View>
-                </View>
-
                 {/* Milestone indicator */}
                 {progress >= 50 && progress < 100 && (
                     <View style={styles.milestoneContainer}>
@@ -282,20 +267,6 @@ const styles = StyleSheet.create({
         letterSpacing: 0.3,
     },
 
-    microBar: {
-        marginTop: 4,
-    },
-
-    microBarBg: {
-        height: 4,
-        borderRadius: 2,
-        overflow: 'hidden',
-    },
-
-    microBarFill: {
-        height: '100%',
-        borderRadius: 2,
-    },
 
     milestoneContainer: {
         flexDirection: 'row',
