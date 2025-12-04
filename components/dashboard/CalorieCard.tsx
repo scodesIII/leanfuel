@@ -1,15 +1,13 @@
-import { View, Text, StyleSheet, Animated, Easing, Platform } from "react-native";
-import { useRef, useEffect } from "react";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
+import { ProgressRing } from './ProgressRing';
+import { Gradients } from '@/constants/Colors';
 
 interface CalorieCardProps {
     consumed: number;
     goal: number;
 }
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     const progress = goal > 0 ? Math.min((consumed / goal) * 100, 100) : 0;
@@ -22,85 +20,18 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
     const textColor = useThemeColor({}, "text");
     const mutedColor = useThemeColor({}, "muted");
 
-    const successColor = useThemeColor({}, "success");
-    const errorColor = useThemeColor({}, "error");
-    const infoColor = useThemeColor({}, "info");
-
-    // Apple Fitness-style ring animation
-    const ringProgress = useRef(new Animated.Value(0)).current;
-    const scaleAnim = useRef(new Animated.Value(1)).current; // Start at full scale
-    const opacityAnim = useRef(new Animated.Value(1)).current; // Start visible
-
-    // Ring progress animation - updates when progress changes
-    useEffect(() => {
-        Animated.timing(ringProgress, {
-            toValue: progress,
-            duration: 2000, // Slowed down for better visibility
-            easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-            useNativeDriver: false, // SVG animations don't support native driver
-        }).start();
-    }, [progress]);
-
-    // Calculate ring stroke
-    const size = 180;
-    const strokeWidth = 16;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = radius * 2 * Math.PI;
-
-    const strokeDashoffset = ringProgress.interpolate({
-        inputRange: [0, 100],
-        outputRange: [circumference, 0],
-    });
-
-    // Helper to create gradient variations from a base color
-    const createGradient = (baseColor: string) => {
-        // Parse hex color to RGB
-        const hex = baseColor.replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-
-        // Create lighter and darker variations
-        const lighten = (amount: number) => {
-            const nr = Math.min(255, r + amount);
-            const ng = Math.min(255, g + amount);
-            const nb = Math.min(255, b + amount);
-            return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
-        };
-
-        const darken = (amount: number) => {
-            const nr = Math.max(0, r - amount);
-            const ng = Math.max(0, g - amount);
-            const nb = Math.max(0, b - amount);
-            return `#${nr.toString(16).padStart(2, '0')}${ng.toString(16).padStart(2, '0')}${nb.toString(16).padStart(2, '0')}`;
-        };
-
-        // Return gradient array: [lighter, base, darker]
-        return [lighten(20), baseColor, darken(15)];
-    };
-
-    // Determine gradient colors based on progress using theme colors
-    const getGradientColors = () => {
-        if (isOverGoal) {
-            return createGradient(errorColor); // Red - over goal
-        } else if (progress === 100) {
-            return createGradient(successColor); // Green - goal met
-        } else {
-            return createGradient(infoColor); // Blue - on track
-        }
-    };
-
-    const gradientColors = getGradientColors();
+    // Determine gradient colors based on progress
+    const gradientColors = isOverGoal
+        ? Gradients.error
+        : progress === 100
+            ? Gradients.success
+            : Gradients.info;
 
     return (
-        <Animated.View
+        <View
             style={[
                 styles.container,
-                {
-                    backgroundColor: cardColor,
-                    opacity: opacityAnim,
-                    transform: [{ scale: scaleAnim }]
-                }
+                { backgroundColor: cardColor }
             ]}
         >
             {/* Subtle gradient overlay for depth */}
@@ -126,43 +57,9 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                 </View>
             </View>
 
+
             {/* Apple Fitness Ring */}
-            <View style={styles.ringContainer}>
-                <Svg width={size} height={size} style={styles.ring}>
-                    <Defs>
-                        <SvgLinearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <Stop offset="0%" stopColor={gradientColors[0]} stopOpacity="1" />
-                            <Stop offset="50%" stopColor={gradientColors[1]} stopOpacity="1" />
-                            <Stop offset="100%" stopColor={gradientColors[2]} stopOpacity="1" />
-                        </SvgLinearGradient>
-                    </Defs>
-
-                    {/* Background ring */}
-                    <Circle
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                        stroke="rgba(0,0,0,0.08)"
-                        strokeWidth={strokeWidth}
-                        fill="none"
-                    />
-
-                    {/* Progress ring with gradient */}
-                    <AnimatedCircle
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                        stroke="url(#ringGradient)"
-                        strokeWidth={strokeWidth}
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                        rotation="-90"
-                        origin={`${size / 2}, ${size / 2}`}
-                    />
-                </Svg>
-
+            <ProgressRing progress={progress} size={180} gradientColors={gradientColors}>
                 {/* Center content - Noom-style large numbers */}
                 <View style={styles.ringCenter}>
                     <Text style={[styles.mainNumber, { color: textColor }]}>
@@ -176,7 +73,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                         kcal
                     </Text>
                 </View>
-            </View>
+            </ProgressRing>
 
             {/* Progress percentage badge */}
             <View style={styles.progressBadge}>
@@ -206,7 +103,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                 {/* Micro progress bar */}
                 <View style={styles.microBar}>
                     <View style={[styles.microBarBg, { backgroundColor: 'rgba(0,0,0,0.05)' }]}>
-                        <Animated.View
+                        <View
                             style={[
                                 styles.microBarFill,
                                 {
@@ -237,7 +134,7 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
                     </View>
                 )}
             </View>
-        </Animated.View>
+        </View>
     );
 };
 
@@ -302,19 +199,7 @@ const styles = StyleSheet.create({
         letterSpacing: 0.8,
     },
 
-    ringContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 20,
-        position: 'relative',
-    },
-
-    ring: {
-        transform: [{ rotate: '0deg' }],
-    },
-
     ringCenter: {
-        position: 'absolute',
         alignItems: 'center',
         justifyContent: 'center',
     },
