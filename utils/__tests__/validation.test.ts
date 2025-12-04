@@ -470,7 +470,44 @@ describe('validateOnboardingData', () => {
         });
     });
 
-   
+
+    // ==========================================================================
+    // TIMEFRAME VALIDATION
+    // ==========================================================================
+
+    describe('Timeframe Validation', () => {
+        it('should reject empty timeframe', () => {
+            const data = createValidData();
+            data.timeframe = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.timeframe).toBe('Please select a valid timeframe');
+        });
+
+        it('should reject invalid timeframe', () => {
+            const data = createValidData();
+            data.timeframe = 'invalid' as any;
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.timeframe).toBe('Please select a valid timeframe');
+        });
+
+        const validTimeframes = ['3months', '6months', '12months', 'flexible'];
+        validTimeframes.forEach((timeframe) => {
+            it(`should accept "${timeframe}" as valid timeframe`, () => {
+                const data = createValidData();
+                data.timeframe = timeframe as any;
+
+                const result = validateOnboardingData(data);
+                expect(result.errors.timeframe).toBeUndefined();
+            });
+        });
+    });
+
+
+    
     
 });
 
