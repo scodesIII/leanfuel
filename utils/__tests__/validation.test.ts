@@ -339,10 +339,72 @@ describe('validateOnboardingData', () => {
         });
     });
 
-    
 
+    // ==========================================================================
+    // HEIGHT VALIDATION
+    // ==========================================================================
 
-    
+    describe('Height Validation', () => {
+        it('should reject empty height', () => {
+            const data = createValidData();
+            data.height = '';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.height).toBe('Height is required');
+        });
+
+        it('should reject non-numeric height', () => {
+            const data = createValidData();
+            data.height = 'abc';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.height).toBe('Height is required');
+        });
+
+        it('should reject height below 50 cm', () => {
+            const data = createValidData();
+            data.height = '49';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.height).toBe('Height must be at least 50 cm');
+        });
+
+        it('should accept height of 50 cm (boundary)', () => {
+            const data = createValidData();
+            data.height = '50';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.height).toBeUndefined();
+        });
+
+        it('should accept height of 300 cm (boundary)', () => {
+            const data = createValidData();
+            data.height = '300';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.height).toBeUndefined();
+        });
+
+        it('should reject height above 300 cm', () => {
+            const data = createValidData();
+            data.height = '301';
+
+            const result = validateOnboardingData(data);
+            expect(result.isValid).toBe(false);
+            expect(result.errors.height).toBe('Height must be less than 300 cm');
+        });
+
+        it('should accept decimal height values', () => {
+            const data = createValidData();
+            data.height = '175.5';
+
+            const result = validateOnboardingData(data);
+            expect(result.errors.height).toBeUndefined();
+        });
+    });
     
 });
 
