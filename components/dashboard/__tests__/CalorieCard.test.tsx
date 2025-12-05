@@ -121,12 +121,21 @@ describe('CalorieCard', () => {
             expect(getByText('GOAL MET')).toBeTruthy();
         });
 
-        it('should show "GOAL MET" when over goal (not OVER)', () => {
-            // Over 100% - component shows GOAL MET in status badge, but "over goal" in footer
-            const { getByText } = render(<CalorieCard consumed={2500} goal={2000} />);
-            // The status badge should show GOAL MET (100% cap)
+        it('should show "GOAL MET" when slightly over goal (100-110% buffer)', () => {
+            // 105% progress - within buffer zone
+            const { getByText } = render(<CalorieCard consumed={2100} goal={2000} />);
+            // Should still show GOAL MET (not OVER) within 10% buffer
             expect(getByText('GOAL MET')).toBeTruthy();
             // But footer shows "over goal"
+            expect(getByText('over goal')).toBeTruthy();
+        });
+
+        it('should show "OVER" when significantly over goal (>110%)', () => {
+            // 125% progress - beyond buffer zone
+            const { getByText } = render(<CalorieCard consumed={2500} goal={2000} />);
+            // Should show OVER status
+            expect(getByText('OVER')).toBeTruthy();
+            // And footer shows "over goal"
             expect(getByText('over goal')).toBeTruthy();
         });
     });
