@@ -10,7 +10,8 @@ interface CalorieCardProps {
 }
 
 export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
-    const progress = goal > 0 ? Math.min((consumed / goal) * 100, 100) : 0;
+    const actualProgress = goal > 0 ? (consumed / goal) * 100 : 0; // Uncapped for logic
+    const progress = Math.min(actualProgress, 100); // Capped for display
     const remaining = goal - consumed;
     const isOverGoal = remaining < 0;
     const displayRemaining = Math.abs(remaining);
@@ -27,13 +28,13 @@ export const CalorieCard = ({ consumed, goal }: CalorieCardProps) => {
             ? Gradients.success
             : Gradients.info;
 
-    // Get status text based on progress
+    // Get status text based on progress (using uncapped actualProgress)
     const getStatus = () => {
-        if (progress === 0) return 'NOT STARTED';
-        if (progress <= 10) return 'GETTING STARTED';
-        if (progress > 90 && progress < 100) return 'CLOSE';
-        if (progress === 100) return 'GOAL MET';
-        if (isOverGoal) return 'OVER';
+        if (actualProgress === 0) return 'NOT STARTED';
+        if (actualProgress <= 10) return 'GETTING STARTED';
+        if (actualProgress > 90 && actualProgress < 100) return 'CLOSE';
+        if (actualProgress >= 100 && actualProgress <= 110) return 'GOAL MET'; // 10% buffer zone
+        if (isOverGoal && actualProgress > 110) return 'OVER';
         return 'ON TRACK';
     };
 
