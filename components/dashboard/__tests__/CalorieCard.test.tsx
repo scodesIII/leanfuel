@@ -83,4 +83,51 @@ describe('CalorieCard', () => {
             expect(getByText('remaining')).toBeTruthy();
         });
     });
+
+    // =========================================================================
+    // STATUS FUNCTION TESTS
+    // =========================================================================
+    describe('Status Function (getStatus)', () => {
+        it('should show "NOT STARTED" when progress is 0%', () => {
+            const { getByText } = render(<CalorieCard consumed={0} goal={2000} />);
+            expect(getByText('NOT STARTED')).toBeTruthy();
+        });
+
+        it('should show "GETTING STARTED" when progress is 1-10%', () => {
+            // 5% progress
+            const { getByText } = render(<CalorieCard consumed={100} goal={2000} />);
+            expect(getByText('GETTING STARTED')).toBeTruthy();
+        });
+
+        it('should show "GETTING STARTED" at exactly 10%', () => {
+            const { getByText } = render(<CalorieCard consumed={200} goal={2000} />);
+            expect(getByText('GETTING STARTED')).toBeTruthy();
+        });
+
+        it('should show "ON TRACK" when progress is 11-90%', () => {
+            // 50% progress
+            const { getByText } = render(<CalorieCard consumed={1000} goal={2000} />);
+            expect(getByText('ON TRACK')).toBeTruthy();
+        });
+
+        it('should show "CLOSE" when progress is 91-99%', () => {
+            // 95% progress
+            const { getByText } = render(<CalorieCard consumed={1900} goal={2000} />);
+            expect(getByText('CLOSE')).toBeTruthy();
+        });
+
+        it('should show "GOAL MET" when progress is exactly 100%', () => {
+            const { getByText } = render(<CalorieCard consumed={2000} goal={2000} />);
+            expect(getByText('GOAL MET')).toBeTruthy();
+        });
+
+        it('should show "GOAL MET" when over goal (not OVER)', () => {
+            // Over 100% - component shows GOAL MET in status badge, but "over goal" in footer
+            const { getByText } = render(<CalorieCard consumed={2500} goal={2000} />);
+            // The status badge should show GOAL MET (100% cap)
+            expect(getByText('GOAL MET')).toBeTruthy();
+            // But footer shows "over goal"
+            expect(getByText('over goal')).toBeTruthy();
+        });
+    });
 });
