@@ -139,4 +139,39 @@ describe('CalorieCard', () => {
             expect(getByText('over goal')).toBeTruthy();
         });
     });
+
+    // =========================================================================
+    // MILESTONE FUNCTION TESTS
+    // =========================================================================
+    describe('Milestone Function (getMilestone)', () => {
+        it('should show no milestone at low progress (0-44%)', () => {
+            const { queryByText } = render(<CalorieCard consumed={800} goal={2000} />);
+            // 40% progress - no milestone
+            expect(queryByText('Halfway there! 🎯')).toBeNull();
+            expect(queryByText('Goal reached! 🎉')).toBeNull();
+        });
+
+        it('should show "Halfway there!" at 45-55% progress', () => {
+            const { getByText } = render(<CalorieCard consumed={1000} goal={2000} />);
+            // 50% progress
+            expect(getByText('Halfway there! 🎯')).toBeTruthy();
+        });
+
+        it('should show "Halfway there!" at boundary (45%)', () => {
+            const { getByText } = render(<CalorieCard consumed={900} goal={2000} />);
+            expect(getByText('Halfway there! 🎯')).toBeTruthy();
+        });
+
+        it('should show "Goal reached!" at exactly 100%', () => {
+            const { getByText } = render(<CalorieCard consumed={2000} goal={2000} />);
+            expect(getByText('Goal reached! 🎉')).toBeTruthy();
+        });
+
+        it('should show no milestone when significantly over goal (>110%)', () => {
+            const { queryByText } = render(<CalorieCard consumed={2500} goal={2000} />);
+            // 125% progress - no milestone (OVER status)
+            expect(queryByText('Halfway there! 🎯')).toBeNull();
+            expect(queryByText('Goal reached! 🎉')).toBeNull();
+        });
+    });
 });
