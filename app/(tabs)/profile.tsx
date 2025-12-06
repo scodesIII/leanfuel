@@ -1,22 +1,25 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
     const backgroundColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
 
     return (
-        <ScrollView 
-            style={[styles.container, { backgroundColor }]}
-            contentContainerStyle={styles.content}
-        >
-            <Text style={[styles.title, { color: textColor }]}>
-                Profile Screen
-            </Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>
-                We'll build this together! 🚀
-            </Text>
-        </ScrollView>
+        <SafeAreaView style={{ flex: 1, backgroundColor }}>
+            <ScrollView 
+                style={styles.container}
+                contentContainerStyle={styles.content}
+            >
+                <Text style={[styles.title, { color: textColor }]}>
+                    Profile Screen
+                </Text>
+                <Text style={[styles.subtitle, { color: textColor }]}>
+                    We'll build this together! 🚀
+                </Text>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
