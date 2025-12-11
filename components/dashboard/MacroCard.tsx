@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, Platform, Animated, Easing } from 'react-native
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef } from 'react';
-import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
 
 interface MacroCardProps {
     label: string;      // "CARBS", "PROTEIN", "FAT"
@@ -10,8 +9,6 @@ interface MacroCardProps {
     goal: number;       // daily goal in grams
     color: string;      // theme color
 }
-
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
     const progress = goal > 0 ? Math.min((consumed / goal) * 100, 100) : 0;
@@ -23,10 +20,9 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
     const mutedColor = useThemeColor({}, 'muted');
 
     // Animations
-    const ringProgress = useRef(new Animated.Value(0)).current;
     const scaleAnim = useRef(new Animated.Value(0.9)).current;
     const opacityAnim = useRef(new Animated.Value(0)).current;
-    const barHeight = useRef(new Animated.Value(0)).current;
+    const barWidth = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         Animated.sequence([
@@ -43,35 +39,16 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
                     useNativeDriver: true,
                 }),
             ]),
-            Animated.parallel([
-                Animated.timing(ringProgress, {
-                    toValue: progress,
-                    duration: 1000,
-                    easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(barHeight, {
-                    toValue: progress,
-                    duration: 1000,
-                    easing: Easing.bezier(0.4, 0.0, 0.2, 1),
-                    useNativeDriver: false,
-                }),
-            ]),
+            Animated.timing(barWidth, {
+                toValue: progress,
+                duration: 1000,
+                easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+                useNativeDriver: false,
+            }),
         ]).start();
     }, [progress]);
 
-    // Ring calculations
-    const size = 72;
-    const strokeWidth = 7;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = radius * 2 * Math.PI;
-
-    const strokeDashoffset = ringProgress.interpolate({
-        inputRange: [0, 100],
-        outputRange: [circumference, 0],
-    });
-
-    const barHeightInterpolated = barHeight.interpolate({
+    const barWidthInterpolated = barWidth.interpolate({
         inputRange: [0, 100],
         outputRange: ['0%', '100%'],
     });
@@ -83,7 +60,7 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
 
     // Get icon based on macro type
     const getIcon = () => {
-        switch(label.toUpperCase()) {
+        switch (label.toUpperCase()) {
             case 'CARBS': return '🌾';
             case 'PROTEIN': return '🥩';
             case 'FAT': return '🥑';
@@ -92,10 +69,10 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
     };
 
     return (
-        <Animated.View 
+        <Animated.View
             style={[
-                styles.container, 
-                { 
+                styles.container,
+                {
                     backgroundColor: cardColor,
                     opacity: opacityAnim,
                     transform: [{ scale: scaleAnim }]
@@ -122,51 +99,6 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
                 </Text>
             </View>
 
-            {/* Compact Ring Progress */}
-            <View style={styles.ringContainer}>
-                <Svg width={size} height={size}>
-                    <Defs>
-                        <SvgLinearGradient id={`gradient-${label}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                            <Stop offset="0%" stopColor={color} stopOpacity="1" />
-                            <Stop offset="100%" stopColor={color} stopOpacity="0.7" />
-                        </SvgLinearGradient>
-                    </Defs>
-                    
-                    {/* Background ring */}
-                    <Circle
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                        stroke="rgba(0,0,0,0.06)"
-                        strokeWidth={strokeWidth}
-                        fill="none"
-                    />
-                    
-                    {/* Progress ring */}
-                    <AnimatedCircle
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                        stroke={`url(#gradient-${label})`}
-                        strokeWidth={strokeWidth}
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                        rotation="-90"
-                        origin={`${size / 2}, ${size / 2}`}
-                    />
-                </Svg>
-
-                {/* Center percentage */}
-                <View style={styles.ringCenter}>
-                    <Text style={[styles.percentage, { color: isOver ? '#FF4757' : color }]}>
-                        {Math.round(progress)}
-                    </Text>
-                    <Text style={[styles.percentSign, { color: mutedColor }]}>%</Text>
-                </View>
-            </View>
-
             {/* Numbers with emphasis */}
             <View style={styles.numbersContainer}>
                 <View style={styles.consumedRow}>
@@ -180,34 +112,22 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
                 </Text>
             </View>
 
-            {/* Vertical Progress Bar */}
-            <View style={styles.barContainer}>
-                <View style={[styles.barBackground, { backgroundColor: color + '10' }]}>
-                    <Animated.View style={{ height: barHeightInterpolated }}>
+            {/* Horizontal Progress Bar */}
+            <View style={styles.horizontalBarContainer}>
+                <View style={[styles.horizontalBarBackground, { backgroundColor: color + '10' }]}>
+                    <Animated.View style={{ width: barWidthInterpolated }}>
                         <LinearGradient
                             colors={[color, color + 'DD']}
                             start={{ x: 0, y: 0 }}
-                            end={{ x: 0, y: 1 }}
-                            style={styles.barFill}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.horizontalBarFill}
                         />
                     </Animated.View>
                 </View>
-
-                {/* Milestone markers */}
-                <View style={styles.markers}>
-                    {[100, 75, 50, 25].map((marker) => (
-                        <View 
-                            key={marker} 
-                            style={[
-                                styles.marker,
-                                { 
-                                    opacity: progress >= marker ? 0.3 : 0.1,
-                                    backgroundColor: color 
-                                }
-                            ]} 
-                        />
-                    ))}
-                </View>
+                {/* Percentage text */}
+                <Text style={[styles.percentage, { color: isOver ? '#FF4757' : color }]}>
+                    {Math.round(progress)}%
+                </Text>
             </View>
 
             {/* Status indicator */}
@@ -247,21 +167,21 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        minWidth: 120,
-        borderRadius: 20,
-        padding: 18,
+        minWidth: 110,
+        borderRadius: 16,
+        padding: 16,
         marginHorizontal: 4,
         alignItems: 'center',
         position: 'relative',
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
-                shadowOpacity: 0.08,
-                shadowRadius: 16,
-                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.06,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 4 },
             },
             android: {
-                elevation: 6,
+                elevation: 4,
             },
             default: {},
         }),
@@ -269,66 +189,39 @@ const styles = StyleSheet.create({
 
     gradientOverlay: {
         ...StyleSheet.absoluteFillObject,
-        borderRadius: 20,
+        borderRadius: 16,
         overflow: 'hidden',
         pointerEvents: 'none',
     },
 
     header: {
         alignItems: 'center',
-        marginBottom: 14,
+        marginBottom: 12,
     },
 
     iconBadge: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 8,
+        marginBottom: 6,
     },
 
     icon: {
-        fontSize: 18,
+        fontSize: 16,
     },
 
     label: {
         fontSize: 10,
         fontWeight: '700',
-        letterSpacing: 1.5,
+        letterSpacing: 1.2,
         textTransform: 'uppercase',
-    },
-
-    ringContainer: {
-        position: 'relative',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
-    },
-
-    ringCenter: {
-        position: 'absolute',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
-    },
-
-    percentage: {
-        fontSize: 20,
-        fontWeight: '800',
-        letterSpacing: -0.5,
-    },
-
-    percentSign: {
-        fontSize: 11,
-        fontWeight: '600',
-        marginLeft: 1,
-        opacity: 0.6,
     },
 
     numbersContainer: {
         alignItems: 'center',
-        marginBottom: 14,
+        marginBottom: 12,
     },
 
     consumedRow: {
@@ -337,7 +230,7 @@ const styles = StyleSheet.create({
     },
 
     consumed: {
-        fontSize: 26,
+        fontSize: 28,
         fontWeight: '700',
         letterSpacing: -0.5,
     },
@@ -356,176 +249,135 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
 
-    barContainer: {
-        width: 48,
-        height: 100,
-        position: 'relative',
+    horizontalBarContainer: {
+        width: '100%',
         marginBottom: 12,
     },
 
-    barBackground: {
+    horizontalBarBackground: {
         width: '100%',
-        height: '100%',
-        borderRadius: 24,
+        height: 8,
+        borderRadius: 4,
         overflow: 'hidden',
-        justifyContent: 'flex-end',
+        marginBottom: 6,
     },
 
-    barFill: {
-        width: '100%',
+    horizontalBarFill: {
         height: '100%',
-        borderRadius: 24,
+        borderRadius: 4,
     },
 
-    markers: {
-        position: 'absolute',
-        right: -8,
-        height: '100%',
-        justifyContent: 'space-between',
-        paddingVertical: 4,
-    },
-
-    marker: {
-        width: 3,
-        height: 3,
-        borderRadius: 1.5,
+    percentage: {
+        fontSize: 14,
+        fontWeight: '700',
+        textAlign: 'center',
+        letterSpacing: -0.3,
     },
 
     statusBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.04)',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 12,
-        gap: 5,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 10,
+        gap: 4,
     },
 
     statusDot: {
-        width: 5,
-        height: 5,
-        borderRadius: 2.5,
+        width: 4,
+        height: 4,
+        borderRadius: 2,
     },
 
     statusText: {
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: '600',
-        letterSpacing: 0.3,
+        letterSpacing: 0.2,
     },
 
     celebrationBadge: {
         position: 'absolute',
-        top: 10,
-        right: 10,
-        width: 24,
-        height: 24,
-        borderRadius: 12,
+        top: 8,
+        right: 8,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
     },
 
     celebrationEmoji: {
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: 'bold',
     },
 });
 
 // ============================================================================
-// DESIGN BREAKDOWN - WHAT MAKES THIS PREMIUM
+// DESIGN BREAKDOWN - HORIZONTAL BAR DESIGN
 // ============================================================================
 
 /*
-TOP-TIER DESIGN ELEMENTS:
-==========================
+DESIGN PHILOSOPHY:
+==================
+This design prioritizes VISUAL HIERARCHY over visual complexity.
+- CalorieCard: Large ring (PRIMARY metric)
+- MacroCards: Horizontal bars (SECONDARY metrics)
 
-1. APPLE HEALTH INSPIRATION:
-   ✅ Compact circular ring (72x72) with gradient stroke
-   ✅ Percentage displayed inside ring
-   ✅ Smooth spring animations on mount
-   ✅ Rounded stroke caps for polish
+INDUSTRY INSPIRATION:
+=====================
+• MyFitnessPal: Horizontal bars for macros
+• Cronometer: Simple bar progress
+• Lose It: Clean macro display
+• Noom: Minimal, scannable design
 
-2. WHOOP/OURA MINIMALISM:
-   ✅ Icon badges with subtle backgrounds
-   ✅ All caps labels with wide letter spacing
-   ✅ Clean hierarchy: icon → label → ring → numbers → bar
-   ✅ Generous white space
-   ✅ Monochromatic color scheme per macro
-
-3. STRAVA/NIKE RUN CLUB:
-   ✅ Vertical progress bar with gradient fill
-   ✅ Milestone markers at 25%, 50%, 75%, 100%
-   ✅ Dynamic status badges (over, close to goal, etc.)
-   ✅ Celebration checkmark at 100%
-
-4. CRONOMETER PRO:
-   ✅ Subtle gradient overlay for depth
-   ✅ Two-tier number display (bold consumed / light goal)
-   ✅ Platform-specific shadows
-   ✅ Color-coded status indicators
-
-5. MYFITNESSPAL PREMIUM:
-   ✅ Smart status messages (+Xg over, Xg left)
-   ✅ Warning colors for overages (red)
-   ✅ Milestone celebrations
-   ✅ Compact card that fits 3 across
-
-PREMIUM UX MICRO-INTERACTIONS:
-==============================
-• Staggered entrance: fade → scale → ring animates → bar fills
-• Spring physics on card entrance (natural bounce)
-• Bezier curves matching iOS system animations
-• Bar fills bottom-to-top with gradient
-• Ring animates clockwise from top
-• Status badge changes color/message dynamically
-• Celebration badge appears at 100% completion
-
-COLOR PSYCHOLOGY:
+KEY IMPROVEMENTS:
 =================
-• Carbs: Orange/Amber (energy, warmth)
-• Protein: Blue (strength, reliability)
-• Fat: Green (health, balance)
-• Over goal: Red (warning)
-• Close to goal: Amber (attention)
+1. CLEAR HIERARCHY
+   - Removed circular ring (reserved for CalorieCard)
+   - Horizontal bar is visually secondary
+   - Easier to distinguish primary vs secondary data
 
-TYPOGRAPHY HIERARCHY:
-====================
-• Icon: 18pt emoji
-• Label: 10pt, 700 weight, 1.5pt spacing, ALL CAPS
-• Percentage: 20pt, 800 weight (extra bold)
-• Consumed: 26pt, 700 weight
-• Goal: 12pt, 500 weight, muted
+2. BETTER SCANNABILITY
+   - Numbers are prominent (28pt consumed)
+   - Progress bar is simple and clear
+   - Percentage displayed as text
+   - Less cognitive load
 
-ACCESSIBILITY:
+3. COMPACT DESIGN
+   - Smaller cards (110px min-width vs 120px)
+   - Fits 3 across comfortably
+   - Less vertical space needed
+   - Cleaner overall dashboard
+
+4. PREMIUM POLISH
+   - Smooth gradient bar fill
+   - Spring entrance animation
+   - Icon badges with color tint
+   - Status badges with dynamic colors
+
+ANIMATION SEQUENCE:
+===================
+1. Fade in + scale up (400ms)
+2. Bar fills left-to-right (1000ms)
+Total: 1.4 seconds
+
+LAYOUT:
+=======
+[Icon Badge]
+   LABEL
+   
+  128g
+  / 200g
+  
+[=========>  ] 64%
+
+  • 72g left
+
+CUSTOMIZATION:
 ==============
-• High contrast text on all backgrounds
-• Clear visual hierarchy
-• Multiple progress indicators (ring, bar, percentage)
-• Color + text status indicators (not just color)
-• Touch targets 48x48+ for interactive elements
-
-PERFORMANCE:
-============
-• useNativeDriver where possible
-• Animated.Value reused
-• SVG paths cached
-• Minimal re-renders
-• Platform-specific optimizations
-
-LAYOUT MATH:
-============
-• Card min-width: 120px (fits 3 across on most phones)
-• Padding: 18px (generous but not wasteful)
-• Ring size: 72x72 (compact but readable)
-• Bar height: 100px (good visual balance)
-• Status badge: 12px border radius (modern, not too round)
-
-CUSTOMIZATION OPTIONS:
-======================
-Want to adjust? Easy spots:
-• Ring size: change `size` constant (72)
-• Bar height: change height in barContainer (100)
-• Colors: pass different color prop
-• Icons: modify getIcon() function
-• Animation timing: adjust duration values
-• Shadows: modify Platform.select shadow values
+• Bar height: 8px (styles.horizontalBarBackground)
+• Numbers size: 28pt (styles.consumed)
+• Card width: 110px min (styles.container)
+• Animation speed: 1000ms (barWidth animation)
 */
