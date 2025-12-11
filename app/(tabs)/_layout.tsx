@@ -36,22 +36,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="customComponentsScreen"
-        options={{
-          title: 'custom', // refers to tab title
-          tabBarLabel: 'custom', // refers to tab label
-          tabBarButton: SpecialTabButton,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            // Prevent default action
-            e.preventDefault();
-            // Handle custom button press
-            console.log('TEST');
-          },
-        }}
-      />
-      <Tabs.Screen
         name="foodLogginScreen"
         options={{
           title: 'Food', // refers to tab title

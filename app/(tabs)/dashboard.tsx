@@ -16,7 +16,7 @@ const Dashboard = () => {
   const secondaryColor = useThemeColor({}, 'secondary');
   const borderColor = useThemeColor({}, 'border');
 
-  const [caloriesConsumed, setCaloriesConsumed] = useState(1199);
+  const [caloriesConsumed, setCaloriesConsumed] = useState(1699);
   const [waterIntake, setWaterIntake] = useState(6);
   const [steps] = useState(7495);
   const [weight] = useState(68.5);
@@ -24,8 +24,8 @@ const Dashboard = () => {
   const { profile, isLoading } = useUserStore();
   const user = useUserStore((state) => state.user);
 
-  console.log('Profile data:', profile);
-  console.log('Calorie goal:', profile?.daily_calorie_goal);
+  // console.log('Profile data:', profile);
+  // console.log('Calorie goal:', profile?.daily_calorie_goal);
 
   const caloriesGoal = profile?.daily_calorie_goal ?? 0;
   const caloriesRemaining = caloriesGoal - caloriesConsumed;
@@ -113,82 +113,6 @@ const Dashboard = () => {
           />
         </ThemedView>
 
-        {/* Macros Grid */}
-        <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <ThemedText style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Macronutrients</ThemedText>
-          <View style={{ flexDirection: 'row' }}>
-            <MacroCard macro={macros.carbs} label="CARBS" color={macros.carbs.color} />
-            <MacroCard macro={macros.protein} label="PROTEIN" color={macros.protein.color} />
-            <MacroCard macro={macros.fat} label="FAT" color={macros.fat.color} />
-          </View>
-        </ThemedView>
-
-        {/* Stats Row */}
-        <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <View style={{ flexDirection: 'row' }}>
-            <StatCard
-              icon={Activity}
-              title="STEPS"
-              value={steps.toLocaleString()}
-              subtitle="of 10,000 goal"
-              iconColor="#8B5CF6"
-            />
-            <StatCard
-              icon={Droplets}
-              title="WATER"
-              value={`${waterIntake}/8`}
-              subtitle="glasses today"
-              iconColor="#3B82F6"
-            />
-          </View>
-        </ThemedView>
-
-        {/* Recent Foods */}
-        <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <ThemedText style={{ fontSize: 18, fontWeight: '600' }}>Recent Foods</ThemedText>
-            <TouchableOpacity>
-              <ThemedText style={{ color: primaryColor, fontWeight: '500' }}>View All</ThemedText>
-            </TouchableOpacity>
-          </View>
-
-          <ThemedView style={{ backgroundColor: cardBackground, borderRadius: 12, overflow: 'hidden' }}>
-            {recentFoods.map((food, index) => (
-              <ThemedView key={index} style={{
-                padding: 16,
-                borderBottomWidth: index !== recentFoods.length - 1 ? 1 : 0,
-                borderBottomColor: borderColor
-              }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <View style={{ flex: 1 }}>
-                    <ThemedText style={{ fontWeight: '500' }}>{food.name}</ThemedText>
-                    <ThemedText style={{ fontSize: 14, opacity: 0.7, marginTop: 4 }}>{food.meal} • {food.time}</ThemedText>
-                  </View>
-                  <ThemedText style={{ fontWeight: '600' }}>{food.calories} cal</ThemedText>
-                </View>
-              </ThemedView>
-            ))}
-          </ThemedView>
-        </ThemedView>
-
-        {/* Quick Actions */}
-        <ThemedView style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
-          <ThemedText style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Quick Actions</ThemedText>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: '#10b981', borderRadius: 12, padding: 16, alignItems: 'center', marginHorizontal: 4 }}>
-              <Plus size={24} color="white" />
-              <ThemedText style={{ color: 'white', fontWeight: '500', marginTop: 8 }}>Log Food</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: '#3b82f6', borderRadius: 12, padding: 16, alignItems: 'center', marginHorizontal: 4 }}>
-              <Droplets size={24} color="white" />
-              <ThemedText style={{ color: 'white', fontWeight: '500', marginTop: 8 }}>Add Water</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity style={{ flex: 1, backgroundColor: '#8b5cf6', borderRadius: 12, padding: 16, alignItems: 'center', marginHorizontal: 4 }}>
-              <TrendingUp size={24} color="white" />
-              <ThemedText style={{ color: 'white', fontWeight: '500', marginTop: 8 }}>Progress</ThemedText>
-            </TouchableOpacity>
-          </View>
-        </ThemedView>
       </ScrollView>
     </SafeAreaView>
   );
