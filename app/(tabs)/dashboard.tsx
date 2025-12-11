@@ -7,6 +7,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUserStore } from '@/stores/userStore';
 import { CalorieCard } from '@/components/dashboard/CalorieCard';
+import { MacroCard } from '@/components/dashboard/MacroCard';
 
 const Dashboard = () => {
   const backgroundColor = useThemeColor({}, 'background');
@@ -64,28 +65,6 @@ const Dashboard = () => {
     );
   };
 
-  const MacroCard = ({ macro, label, color }: { macro: { consumed: number; goal: number }; label: string; color: string }) => {
-    const progress = (macro.consumed / macro.goal) * 100;
-    return (
-      <ThemedView style={{ backgroundColor: cardBackground, borderRadius: 12, padding: 16, flex: 1, marginHorizontal: 4 }}>
-        <ThemedText style={{ fontSize: 12, opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>{label}</ThemedText>
-        <ThemedText style={{ fontSize: 18, fontWeight: '600', marginBottom: 4 }}>
-          {macro.consumed}g
-        </ThemedText>
-        <ThemedText style={{ fontSize: 12, opacity: 0.6, marginBottom: 12 }}>of {macro.goal}g</ThemedText>
-        <View style={{ height: 8, backgroundColor: borderColor, borderRadius: 4, overflow: 'hidden' }}>
-          <View
-            style={{
-              height: '100%',
-              backgroundColor: color,
-              borderRadius: 4,
-              width: `${Math.min(progress, 100)}%`
-            }}
-          />
-        </View>
-      </ThemedView>
-    );
-  };
 
   const StatCard = ({ icon: Icon, title, value, subtitle, iconColor = "#3B82F6" }: { icon: any, title: string, value: string | number, subtitle: string, iconColor?: string }) => (
     <ThemedView style={{ backgroundColor: cardBackground, borderRadius: 12, padding: 16, flex: 1, marginHorizontal: 4 }}>
@@ -111,6 +90,34 @@ const Dashboard = () => {
             consumed={caloriesConsumed}
             goal={caloriesGoal}
           />
+        </ThemedView>
+
+
+        {/* Macros Section */}
+        <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <ThemedText style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>
+            Macronutrients
+          </ThemedText>
+          <View style={{ flexDirection: 'row' }}>
+            <MacroCard
+              label="CARBS"
+              consumed={128}
+              goal={200}
+              color={macros.carbs.color}
+            />
+            <MacroCard
+              label="PROTEIN"
+              consumed={49}
+              goal={100}
+              color={macros.protein.color}
+            />
+            <MacroCard
+              label="FAT"
+              consumed={45}
+              goal={67}
+              color={macros.fat.color}
+            />
+          </View>
         </ThemedView>
 
       </ScrollView>
