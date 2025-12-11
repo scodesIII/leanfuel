@@ -124,10 +124,6 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
                         />
                     </Animated.View>
                 </View>
-                {/* Percentage text */}
-                <Text style={[styles.percentage, { color: isOver ? '#FF4757' : color }]}>
-                    {Math.round(progress)}%
-                </Text>
             </View>
 
             {/* Status indicator */}
