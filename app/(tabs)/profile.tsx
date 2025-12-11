@@ -1,6 +1,8 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+
 
 export default function ProfileScreen() {
     const backgroundColor = useThemeColor({}, 'background');
@@ -12,12 +14,7 @@ export default function ProfileScreen() {
                 style={styles.container}
                 contentContainerStyle={styles.content}
             >
-                <Text style={[styles.title, { color: textColor }]}>
-                    Profile Screen
-                </Text>
-                <Text style={[styles.subtitle, { color: textColor }]}>
-                    We'll build this together! 🚀
-                </Text>
+            <ProfileHeader />
             </ScrollView>
         </SafeAreaView>
     );

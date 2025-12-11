@@ -26,31 +26,78 @@ export function ProfileHeader() {
         return name[0]?.toUpperCase() || '?';
     }
 
-    useEffect(() => {
-        console.log("ProfileHeader mounted");
-        console.log("Initials:", getInitials());
-    }, []);    
+    const displayName = profile?.display_name || profile?.full_name || 'User';
+    const email = user?.email || 'No email';  
 
     return (
-        <View style={{ flex: 1, backgroundColor }}>
-            <Text style={[styles.title, { color: textColor }]}>
-                Profile Screen
+        <View style={styles.container}>
+            {/* Avatar */}
+            <View style={[styles.avatar, { borderColor }]}>
+                <Text style={[styles.initials, { color: primaryColor }]}>
+                    {getInitials()}
+                </Text>
+            </View>
+
+            {/* Name */}
+            <Text style={[styles.name, { color: textColor }]}>
+                {displayName}
             </Text>
-            <Text style={[styles.subtitle, { color: textColor }]}>
-                We'll build this together! 🚀
+
+            {/* Email */}
+            <Text style={[styles.email, { color: mutedColor }]}>
+                {email}
             </Text>
+
+            {/* Edit Profile Button */}
+            <TouchableOpacity 
+                style={[styles.editButton, { borderColor }]}
+                onPress={() => console.log('Edit profile pressed')}
+            >
+                <Text style={[styles.editButtonText, { color: textColor }]}>
+                    Edit Profile
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 8,
+    container: {
+        alignItems: 'center',
+        paddingVertical: 24
     },
-    subtitle: {
-        fontSize: 16,
-        color: 'gray',
+    avatar: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        borderWidth: 2,
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+    },
+    initials: {
+        fontSize: 32,
+        fontWeight: '700',
+    },
+    name: {
+        fontSize: 24,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    email: {
+        fontSize: 14,
+        opacity: 0.6,
+        marginBottom: 16,
+    },
+    editButton: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    editButtonText: {
+        fontSize: 15,
+        fontWeight: '500',
     },
 });
