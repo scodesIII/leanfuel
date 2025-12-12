@@ -4,21 +4,35 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/superbase';
 
 
-interface WaterTrackerProps {
-    goal_ml: number;
-    total_ml: number;
-    total_glasses: number;
-    percentage: number;
-    isLoading: boolean;
-}
 
-export const WaterTracker = ({ goal_ml, total_ml, total_glasses, percentage, isLoading }: WaterTrackerProps) => {
+export const WaterTracker = () => {
     const [waterData, setWaterData] = useState({
         goal_ml: 0,
         total_ml: 0,
         total_glasses: 0,
         percentage: 0,
     });
+
+    const fetchWaterData = async () => {
+        try {
+            const { data, error } = await supabase.rpc('get_todays_water')
+
+            if ( error) throw error;
+
+            if (data) {
+                setWaterData(data);
+            }
+
+        } catch (error) {
+            console.log('Error: ', error);
+        }
+    }
+
+    useEffect(() => {
+        fetchWaterData();
+    }, []);
+
+
     
     return (
         <View>
