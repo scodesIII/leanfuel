@@ -14,6 +14,16 @@ interface WaterSummary {
   last_log_time?: string;
 }
 
+
+interface LogWaterResponse {
+  success: boolean;
+  water_log_id: string;
+  amount_ml: number;
+  total_ml: number;
+  goal_ml: number;
+  percentage: number;
+}
+
 export const WaterTracker = () => {
     const [waterData, setWaterData] = useState<WaterSummary>({
         total_ml: 0,
@@ -44,6 +54,32 @@ export const WaterTracker = () => {
             console.error('Water fetch error:', error);
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    const addWater = async(amount_ml: number, container_type: string) => {
+        try {
+            const { data, error: rpcError } = await supabase.rpc('log_water', {
+                p_amount_ml: amount_ml,
+                p_container_type: container_type,
+            });
+
+            if (rpcError) throw rpcError;
+            
+            const response = data as LogWaterResponse;
+
+            setWaterData((prevWaterData) => ({
+                ...prevWaterData,
+                total_ml: response.total_ml,
+                total_glasses: Math.round(response.total_ml / 250),
+                percentage: response.percentage,
+                remaining_ml: response.goal_ml - response.total_ml,
+                entries_count: prevWaterData.entries_count + 1,
+            }));
+            
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Failed to log water');
+            console.error('Water log error:', error);
         }
     }
 
