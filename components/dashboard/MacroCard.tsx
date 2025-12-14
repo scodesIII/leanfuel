@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Platform, Animated, Easing } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface MacroCardProps {
     label: string;      // "CARBS", "PROTEIN", "FAT"
@@ -24,29 +24,71 @@ export const MacroCard = ({ label, consumed, goal, color }: MacroCardProps) => {
     const opacityAnim = useRef(new Animated.Value(0)).current;
     const barWidth = useRef(new Animated.Value(0)).current;
 
+    const [hasAnimated, setHasAnimated] = useState(false);
+
     useEffect(() => {
-        Animated.sequence([
-            Animated.parallel([
-                Animated.timing(opacityAnim, {
-                    toValue: 1,
-                    duration: 400,
-                    useNativeDriver: true,
+        if (!hasAnimated) {
+            Animated.sequence([
+                Animated.parallel([
+                    Animated.timing(opacityAnim, {
+                        toValue: 1,
+                        duration: 400,
+                        useNativeDriver: true,
+                    }),
+                    Animated.spring(scaleAnim, {
+                        toValue: 1,
+                        tension: 40,
+                        friction: 7,
+                        useNativeDriver: true,
+                    }),
+                ]),
+                Animated.timing(barWidth, {
+                    toValue: progress,
+                    duration: 1000,
+                    easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+                    useNativeDriver: false,
                 }),
-                Animated.spring(scaleAnim, {
-                    toValue: 1,
-                    tension: 40,
-                    friction: 7,
-                    useNativeDriver: true,
-                }),
-            ]),
+            ]).start(() => setHasAnimated(true));
+        } else {
+            // Just update the bar width without full animation
             Animated.timing(barWidth, {
                 toValue: progress,
-                duration: 1000,
-                easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+                duration: 300,
                 useNativeDriver: false,
-            }),
-        ]).start();
-    }, [progress]);
+            }).start();
+        }
+    }, [progress, hasAnimated]);
+
+    // useEffect(() => {
+    //     // Only animate if progress changed significantly (>1%)
+    //     if (Math.abs(progress - prevProgress.current) < 1) {
+    //         return;
+    //     }
+        
+    //     prevProgress.current = progress;
+        
+    //     Animated.sequence([
+    //         Animated.parallel([
+    //             Animated.timing(opacityAnim, {
+    //                 toValue: 1,
+    //                 duration: 400,
+    //                 useNativeDriver: true,
+    //             }),
+    //             Animated.spring(scaleAnim, {
+    //                 toValue: 1,
+    //                 tension: 40,
+    //                 friction: 7,
+    //                 useNativeDriver: true,
+    //             }),
+    //         ]),
+    //         Animated.timing(barWidth, {
+    //             toValue: progress,
+    //             duration: 1000,
+    //             easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+    //             useNativeDriver: false,
+    //         }),
+    //     ]).start();
+    // }, [progress]);
 
     const barWidthInterpolated = barWidth.interpolate({
         inputRange: [0, 100],
