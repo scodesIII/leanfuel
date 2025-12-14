@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUserStore } from '@/stores/userStore';
 import { CalorieCard } from '@/components/dashboard/CalorieCard';
 import { MacroCard } from '@/components/dashboard/MacroCard';
+import { WaterTracker } from '@/components/dashboard/WaterTracker';
 
 const Dashboard = () => {
   const backgroundColor = useThemeColor({}, 'background');
@@ -18,7 +19,6 @@ const Dashboard = () => {
   const borderColor = useThemeColor({}, 'border');
 
   const [caloriesConsumed, setCaloriesConsumed] = useState(1699);
-  const [waterIntake, setWaterIntake] = useState(6);
   const [steps] = useState(7495);
   const [weight] = useState(68.5);
 
@@ -118,6 +118,14 @@ const Dashboard = () => {
               color={macros.fat.color}
             />
           </View>
+        </ThemedView>
+
+        {/* Water Tracking Section */}
+        <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+          <ThemedText style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>
+            Water Intake
+          </ThemedText>
+          <WaterTracker />
         </ThemedView>
 
       </ScrollView>
