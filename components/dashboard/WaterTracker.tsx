@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/superbase';
@@ -33,6 +33,10 @@ export const WaterTracker = () => {
         percentage: 0,
         remaining_ml: 2000,
     })
+
+    const cardColor = useThemeColor({}, 'card');
+    const textColor = useThemeColor({}, 'text');
+    const mutedColor = useThemeColor({}, 'muted');
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -86,11 +90,117 @@ export const WaterTracker = () => {
     useEffect(() => {
         fetchWaterData();
     }, []);
+
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <Text style={{ color: mutedColor }}>Loading water data...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity onPress={fetchWaterData}>
+                    <Text style={{ color: textColor }}>Retry</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
     
     return (
-        <View>
-            
-        </View>             
+        <View style={[styles.container, { backgroundColor: cardColor }]}>
+            <View style={styles.quickAddContainer}>
+                <TouchableOpacity 
+                    style={styles.quickAddButton}
+                    onPress={() => addWater(250, 'glass')}
+                >
+                    <Text style={styles.quickAddIcon}>🥤</Text>
+                    <Text style={[styles.quickAddLabel, { color: textColor }]}>Glass</Text>
+                    <Text style={[styles.quickAddAmount, { color: mutedColor }]}>250ml</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={styles.quickAddButton}
+                    onPress={() => addWater(500, 'bottle')}
+                >
+                    <Text style={styles.quickAddIcon}>💧</Text>
+                    <Text style={[styles.quickAddLabel, { color: textColor }]}>Bottle</Text>
+                    <Text style={[styles.quickAddAmount, { color: mutedColor }]}>500ml</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={styles.quickAddButton}
+                    onPress={() => addWater(1000, 'liter')}
+                >
+                    <Text style={styles.quickAddIcon}>🚰</Text>
+                    <Text style={[styles.quickAddLabel, { color: textColor }]}>Liter</Text>
+                    <Text style={[styles.quickAddAmount, { color: mutedColor }]}>1000ml</Text>
+                </TouchableOpacity>
+            </View>  
+    </View>
+                  
     );
 };
 
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 28,
+    borderRadius: 24,
+    marginBottom: 20,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.06,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 8 },
+      },
+      android: {
+        elevation: 6,
+      },
+      default: {},
+    }),
+  },
+  
+  quickAddContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  
+  quickAddButton: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+  },
+
+  quickAddIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+
+  quickAddLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+
+  quickAddAmount: {
+      fontSize: 11,
+    opacity: 0.6,
+  },
+
+  errorText: {
+    color: '#FF4757',
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  
+  // .. add more styles matching CalorieCard patterns
+});
