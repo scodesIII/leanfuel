@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Pressable } from 'react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/superbase';
@@ -89,8 +89,9 @@ export const WaterTracker = () => {
             Toast.show({
                 type: 'success',
                 text1: `✓ Added ${amount_ml}ml`,
-                text2: `Total: ${response.total_ml}ml (${response.percentage}%)`,
+                text2: `Total: ${response.total_ml}ml`,
                 position: 'bottom',
+                bottomOffset: 80,
                 visibilityTime: 2000,
             });
 
@@ -104,6 +105,7 @@ export const WaterTracker = () => {
                 text1: 'Failed to log water',
                 text2: error instanceof Error ? error.message : 'Please try again',
                 position: 'bottom',
+                bottomOffset: 80,
             });
         } finally {
             setLoadingButton(null);
@@ -136,7 +138,7 @@ export const WaterTracker = () => {
     return (
         <View style={[styles.container, { backgroundColor: cardColor }]}>
             <View style={styles.quickAddContainer}>
-                <TouchableOpacity
+                <Pressable
                     style={[
                         styles.quickAddButton,
                         loadingButton === 'glass' && styles.quickAddButtonLoading
@@ -151,9 +153,9 @@ export const WaterTracker = () => {
                     )}
                     <Text style={[styles.quickAddLabel, { color: textColor }]}>Glass</Text>
                     <Text style={[styles.quickAddAmount, { color: mutedColor }]}>250ml</Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
+                <Pressable
                     style={[
                         styles.quickAddButton,
                         loadingButton === 'bottle' && styles.quickAddButtonLoading
@@ -168,9 +170,9 @@ export const WaterTracker = () => {
                     )}
                     <Text style={[styles.quickAddLabel, { color: textColor }]}>Bottle</Text>
                     <Text style={[styles.quickAddAmount, { color: mutedColor }]}>500ml</Text>
-                </TouchableOpacity>
+                </Pressable>
 
-                <TouchableOpacity
+                <Pressable
                     style={[
                         styles.quickAddButton,
                         loadingButton === 'liter' && styles.quickAddButtonLoading
@@ -185,7 +187,7 @@ export const WaterTracker = () => {
                     )}
                     <Text style={[styles.quickAddLabel, { color: textColor }]}>Liter</Text>
                     <Text style={[styles.quickAddAmount, { color: mutedColor }]}>1000ml</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
         </View>
 
