@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useUserStore } from '@/stores/userStore';
 import { CalorieCard } from '@/components/dashboard/CalorieCard';
 import { MacroCard } from '@/components/dashboard/MacroCard';
-import { WaterTracker } from '@/components/dashboard/WaterTracker';
+import { ActivityGrid } from '@/components/dashboard/ActivityGrid';
 
 const Dashboard = () => {
   const backgroundColor = useThemeColor({}, 'background');
@@ -120,12 +120,9 @@ const Dashboard = () => {
           </View>
         </ThemedView>
 
-        {/* Water Tracking Section */}
+        {/* Activity Grid */}
         <ThemedView style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <ThemedText style={{ fontSize: 18, fontWeight: '600', marginBottom: 16 }}>
-            Water Intake
-          </ThemedText>
-          <WaterTracker />
+          <ActivityGrid />
         </ThemedView>
 
       </ScrollView>
