@@ -9,9 +9,6 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 
 import { useUserStore } from '@/stores/userStore';
-import { ActivityIndicator } from 'react-native';
-import Toast from 'react-native-toast-message';
-
 // Ignore SafeAreaView deprecation warning from Expo Router/React Navigation dependencies
 LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 
@@ -154,7 +151,6 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        {/* <GluestackUIProvider> */}
         <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
           <Stack.Screen name="index" options={{ headerTitle: "Home", gestureEnabled: false }} />
           <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_right' }} />
@@ -162,9 +158,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
         </Stack>
         <StatusBar style="auto" />
-        {/* </GluestackUIProvider> */}
       </ThemeProvider>
-      <Toast />
     </View>
   );
 }
