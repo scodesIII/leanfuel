@@ -32,7 +32,8 @@ export default {
     "plugins": [
       "expo-dev-client",
       "expo-web-browser",
-      "expo-router"
+      "expo-router",
+      "expo-font",
     ],
 
 
