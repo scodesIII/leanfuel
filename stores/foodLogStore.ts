@@ -1,5 +1,6 @@
 import  { create } from 'zustand';
 import  { supabase} from "@/lib/superbase";
+import { MealType } from '@/types/food';
 
 // ============================================================================
 // STEP 1: DEFINE TYPES (What data structures do we need)
@@ -36,6 +37,7 @@ export interface FoodLog {
     updated_at: string;
 
     // Joined data from food_items table
+    // specifically for displaying logged enteries
     food_item?: {
         id: string;
         name: string;
@@ -102,7 +104,7 @@ export interface DailyNutritionSummary {
 // Input type for adding a new log (subset of FoodLog)
 export interface AddFoodLogInput {
     food_item_id: string;
-    meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+    meal_type: MealType;
     servings: number;
     serving_size_override?: number;
     serving_unit_override?: string;
