@@ -17,7 +17,7 @@ export interface FoodItem {
     cholesterol_mg?: number;
     potassium_mg?: number;
     vitamin_a_mcg?: number;
-    vitamin_c_mcg?: number;
+    vitamin_c_mg?: number;
     calcium_mg?: number;
     iron_mg?: number;
     created_by?: string;
@@ -45,5 +45,13 @@ export interface FoodSearchResult {
     fat_g: number;
     serving_size: number;
     serving_unit: string;
-    is_verified: boolean;
+    is_verified?: boolean;
+}
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+export interface ServingSelection {
+    foodItem: FoodSearchResult;
+    servings: number;
+    mealType: MealType;
 }
