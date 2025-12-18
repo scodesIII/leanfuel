@@ -34,3 +34,16 @@ export interface FoodItem {
     last_used_at?: string;
     deleted_at?: string;
 }
+
+export interface FoodSearchResult {
+    id: string;
+    name: string;
+    brand?: string;
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+    serving_size: number;
+    serving_unit: string;
+    is_verified: boolean;
+}
