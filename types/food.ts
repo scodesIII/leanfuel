@@ -1,0 +1,36 @@
+export interface FoodItem {
+    id: string;
+    barcode?: string;
+    name: string;
+    brand?: string;
+    serving_size: number;
+    serving_unit: string;
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+    fiber_g?: number;
+    sugar_g?: number;
+    sodium_mg?: number;
+    saturated_fat_g?: number;
+    trans_fat_g?: number;
+    cholesterol_mg?: number;
+    potassium_mg?: number;
+    vitamin_a_mcg?: number;
+    vitamin_c_mcg?: number;
+    calcium_mg?: number;
+    iron_mg?: number;
+    created_by?: string;
+    is_public?: boolean;
+    is_verified?: boolean;
+    source: string;
+    source_id?: string;
+    api_provider?: string;
+    image_url?: string;
+    thumbnail_url?: string;
+    usage_count?: number;
+    created_at?: string;
+    updated_at?: string;
+    last_used_at?: string;
+    deleted_at?: string;
+}
