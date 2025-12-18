@@ -10,7 +10,19 @@
       "node": "22.15.1",
       "env": {
         "NODE_ENV": "development",
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true" 
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "node": "22.15.1",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "NODE_ENV": "development",
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
       }
     },
     "preview": {
