@@ -14,4 +14,12 @@ export const FoodSearchItem = ({ item, onPress }: FoodSearchItemProps) => {
     const cardColor = useThemeColor({}, 'card');
     const primaryColor = useThemeColor({}, 'primary');
     const borderColor = useThemeColor({}, 'border');
+
+    // Format macros display "165 cal . 31g P . 3g C . 4g F"
+    const macroText = [
+        `${item.calories} cal`,
+        `${item.protein_g}g P`,
+        `${item.carbs_g}g C`,
+        `${item.fat_g}g F`,
+    ].join(' . ');
 }
