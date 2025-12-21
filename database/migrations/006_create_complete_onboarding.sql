@@ -19,6 +19,7 @@ CREATE OR REPLACE FUNCTION complete_onboarding(
 RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_tdee_result JSON;
