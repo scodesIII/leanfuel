@@ -100,10 +100,16 @@ export const useUserStore = create<UserState>((set, get) => ({
                 .from('profiles')
                 .select('*')
                 .eq('id', user.id)
-                .single();
+                .maybeSingle();
 
             if (error) {
                 console.error('Error fetching profiles:', error);
+                set({ profile: null });
+                return;
+            }
+
+            if (!data) {
+                console.error('No profile found for user:', user.id);
                 set({ profile: null });
                 return;
             }
