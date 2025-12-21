@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import "../global.css"
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUserStore } from '@/stores/userStore';
 // Ignore SafeAreaView deprecation warning from Expo Router/React Navigation dependencies
 LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
@@ -36,6 +36,8 @@ export default function RootLayout() {
 
   // Initialize auth state on app load
   useEffect(() => {
+    // Temporary: Clear stale onboarding state
+    AsyncStorage.removeItem('leanfuel-onboarding');
     initialize();
   }, []);
 
@@ -78,7 +80,7 @@ export default function RootLayout() {
 
       // User is not logged in and trying to access protected route
       // Redirect to home page
-      // console.log('🔒 Route Guard: Unauthenticated user redirected to home');
+      // console.log('Route Guard: Unauthenticated user redirected to home');
       router.replace('/');
       return;
     }
@@ -98,7 +100,7 @@ export default function RootLayout() {
 
       // User hasn't completed onboarding and is trying to access other routes
       // Redirect to onboarding
-      // console.log('📋 Route Guard: User redirected to complete onboarding');
+      // console.log('Route Guard: User redirected to complete onboarding');
       router.replace('/onboarding');
       return;
     }
@@ -108,7 +110,7 @@ export default function RootLayout() {
     if (user && profile?.onboarding_completed && isOnboarding) {
       // User has completed onboarding but is trying to access onboarding page
       // Redirect to dashboard
-      // console.log('✅ Route Guard: Onboarding complete, redirected to dashboard');
+      // console.log('Route Guard: Onboarding complete, redirected to dashboard');
       router.replace('/(tabs)/dashboard');
       return;
     }
@@ -116,7 +118,7 @@ export default function RootLayout() {
     // GUARD 4: Redirect authenticated users away from home page
     // If user is logged in with completed onboarding, redirect to dashboard
     if (user && profile?.onboarding_completed && isHome) {
-      // console.log('✅ Route Guard: Already authenticated, redirected to dashboard');
+      // console.log('Route Guard: Already authenticated, redirected to dashboard');
       router.replace('/(tabs)/dashboard');
       return;
     }
@@ -124,7 +126,7 @@ export default function RootLayout() {
     // GUARD 5: Redirect authenticated users away from auth pages
     // If user is logged in, they shouldn't see signin/signup
     if (user && profile?.onboarding_completed && inAuthGroup) {
-      // console.log('✅ Route Guard: Already authenticated, redirected to dashboard');
+      // console.log('Route Guard: Already authenticated, redirected to dashboard');
       router.replace('/(tabs)/dashboard');
       return;
     }
