@@ -36,8 +36,6 @@ export default function RootLayout() {
 
   // Initialize auth state on app load
   useEffect(() => {
-    // Temporary: Clear stale onboarding state
-    AsyncStorage.removeItem('leanfuel-onboarding');
     initialize();
   }, []);
 
