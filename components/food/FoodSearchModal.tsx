@@ -57,22 +57,19 @@ export function FoodSearchModal({
         onSelectFood(item, mealType);
     };
 
-    // Focus input when modal opens
+    // Reset state and focus input when modal opens
     useEffect(() => {
         if (visible) {
-            // Small delay to ensure modal is fully rendered
-            const timer = setTimeout(() => {
-                inputRef.current?.focus();
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-    }, [visible]);
-
-    // Clear state when modal closes
-    useEffect(() => {
-        if (!visible) {
+            // Clear previous state
             setInputValue('');
             clearSearch();
+
+            // Focus input after modal animation
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 300);
+
+            return () => clearTimeout(timer);
         }
     }, [visible]);
 
