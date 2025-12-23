@@ -326,12 +326,22 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
      */
 
     addLog: async (input: AddFoodLogInput) => {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+    
+        if (!user) {
+            console.error('No authenticated user');
+            set({ error: 'Not authenticated', isLoading: false });
+            return null;
+        }
+
         const state = get();
         set({ isLoading: true, error: null });
 
         try {
             // Prepare the data
             const logData = {
+                user_id: user.id,
                 food_item_id: input.food_item_id,
                 meal_type: input.meal_type,
                 servings: input.servings,

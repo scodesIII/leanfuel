@@ -43,6 +43,9 @@ export interface FoodSearchResult {
     protein_g: number;
     carbs_g: number;
     fat_g: number;
+    fiber_g: number | null;
+    sugar_g: number | null;
+    sodium_mg: number | null;
     serving_size: number;
     serving_unit: string;
     is_verified?: boolean;
