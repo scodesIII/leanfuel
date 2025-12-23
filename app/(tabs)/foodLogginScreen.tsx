@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { FoodSearchModal } from '@/components/food/FoodSearchModal';
 import { FoodSearchResult, MealType } from '@/types/food';
+import { PortionSelector } from '@/components/food/PortionSelector';
+import { useFoodLogStore } from '@/stores/foodLogStore';
 
 export default function FoodLoggingScreen() {
     const [searchModalVisible, setSearchModalVisible] = useState(false);
     const [selectedMealType, setSelectedMealType] = useState<MealType>('breakfast');
+    const [portionSelectorVisible, setPortionSelectorVisible] = useState(false);
+    const [selectedFood, setSelectedFood] = useState<FoodSearchResult | null>(null);
+    const addLog = useFoodLogStore((state) => state.addLog);
+    const { todaysLogs, isLoading, fetchTodaysLogs } = useFoodLogStore();
+
+    // Fetch logs on mount
+    useEffect(() => {
+        fetchTodaysLogs();
+    }, []);
 
     const backgroundColor = useThemeColor({}, 'background');
     const cardColor = useThemeColor({}, 'card');
@@ -30,16 +41,66 @@ export default function FoodLoggingScreen() {
         console.log('Selected food:', item.name);
         console.log('Meal type:', mealType);
         console.log('Calories:', item.calories);
-        
-        // Close modal for now
+
+        setSelectedFood(item);
         setSearchModalVisible(false);
         
-        // TODO: Open portion selector modal
+        // Small delay to let search modal close before opening portion selector
+        setTimeout(() => {
+            setPortionSelectorVisible(true);
+        }, 300);
+    };
+
+    const handleConfirmPortion = async (food: FoodSearchResult, servings: number, mealType: MealType) => {
+      // Close modal immediately for snappy UX
+      setPortionSelectorVisible(false);         
+      setSelectedFood(null);
+
+      // Save to database
+      const result = await addLog({
+        food_item_id: food.id,
+        meal_type: mealType,
+        servings,
+        calories: Math.round(food.calories * servings),
+        protein_g: Math.round(food.protein_g * servings),
+        carbs_g: Math.round(food.carbs_g * servings),
+        fat_g: Math.round(food.fat_g * servings),
+        fiber_g: Math.round((food.fiber_g ?? 0) * servings),
+        sugar_g: Math.round((food.sugar_g ?? 0) * servings),
+        sodium_mg: Math.round((food.sodium_mg ?? 0) * servings),
+      });
+
+      if (result) {
+        console.log('✅ Food logged:', result.id);
+        fetchTodaysLogs();
+      } else {
+        // TODO: Show error toast
+        console.error('❌ Failed to log food');
+      }
     };
 
     const formatMealLabel = (meal: MealType) => {
-        return meal.charAt(0).toUpperCase() + meal.slice(1);
+      return meal.charAt(0).toUpperCase() + meal.slice(1);
     };
+
+    const groupLogsByMeal = () => {
+      const grouped: Record<string, typeof todaysLogs> = {
+        breakfast: [],
+        lunch: [],
+        dinner: [],
+        snack: [],
+      };
+
+      todaysLogs.forEach((log) => {
+        if (grouped[log.meal_type]) {
+            grouped[log.meal_type].push(log);
+        }
+      });
+
+      return grouped;
+    };
+
+    const groupedLogs = groupLogsByMeal();
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor }]}>
@@ -53,31 +114,71 @@ export default function FoodLoggingScreen() {
                 </View>
 
                 {/* Meal Sections */}
-                {mealTypes.map((meal) => (
-                    <View
-                        key={meal}
-                        style={[styles.mealCard, { backgroundColor: cardColor, borderColor }]}
-                    >
-                        <View style={styles.mealHeader}>
-                            <Text style={[styles.mealTitle, { color: textColor }]}>
-                                {formatMealLabel(meal)}
-                            </Text>
-                            <TouchableOpacity
-                                style={[styles.addButton, { backgroundColor: primaryColor }]}
-                                onPress={() => handleOpenSearch(meal)}
-                            >
-                                <Plus size={20} color="white" />
-                            </TouchableOpacity>
-                        </View>
+                {mealTypes.map((meal) => {
+    const foods = groupedLogs[meal] || [];
+    const totalCalories = foods.reduce((sum, log) => sum + log.calories, 0);
 
-                        {/* Empty state for now */}
-                        <View style={styles.emptyMeal}>
-                            <Text style={[styles.emptyText, { color: mutedColor }]}>
-                                No foods logged
+    const formatTime = (timestamp: string) => {
+        return new Date(timestamp).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
+    };
+
+    return (
+        <View
+            key={meal}
+            style={[styles.mealCard, { backgroundColor: cardColor, borderColor }]}
+        >
+            <View style={styles.mealHeader}>
+                <View style={styles.mealHeaderLeft}>
+                    <Text style={[styles.mealTitle, { color: textColor }]}>
+                        {formatMealLabel(meal)}
+                    </Text>
+                    {totalCalories > 0 && (
+                        <Text style={[styles.mealCalories, { color: mutedColor }]}>
+                            {totalCalories} cal
+                        </Text>
+                    )}
+                </View>
+                <TouchableOpacity
+                    style={[styles.addButton, { backgroundColor: primaryColor }]}
+                    onPress={() => handleOpenSearch(meal)}
+                >
+                    <Plus size={20} color="white" />
+                </TouchableOpacity>
+            </View>
+
+            {foods.length > 0 ? (
+                foods.map((log) => (
+                    <View key={log.id} style={[styles.foodItem, { borderTopColor: borderColor }]}>
+                        <View style={styles.foodItemLeft}>
+                            <Text style={[styles.foodName, { color: textColor }]}>
+                                {log.food_item?.name ?? 'Unknown Food'}
+                            </Text>
+                            <Text style={[styles.foodMacros, { color: mutedColor }]}>
+                                C: {log.carbs_g}g • P: {log.protein_g}g • F: {log.fat_g}g
+                            </Text>
+                            <Text style={[styles.foodTime, { color: mutedColor }]}>
+                                {formatTime(log.consumed_at)}
                             </Text>
                         </View>
+                        <Text style={[styles.foodCalories, { color: textColor }]}>
+                            {log.calories} cal
+                        </Text>
                     </View>
-                ))}
+                ))
+            ) : (
+                <View style={styles.emptyMeal}>
+                    <Text style={[styles.emptyText, { color: mutedColor }]}>
+                        No foods logged
+                    </Text>
+                </View>
+            )}
+        </View>
+    );
+})}
             </ScrollView>
 
             {/* Floating Action Button */}
@@ -94,6 +195,17 @@ export default function FoodLoggingScreen() {
                 onClose={() => setSearchModalVisible(false)}
                 onSelectFood={handleSelectFood}
                 mealType={selectedMealType}
+            />
+
+            <PortionSelector
+                visible={portionSelectorVisible}
+                food={selectedFood}
+                mealType={selectedMealType}
+                onClose={() => {
+                    setPortionSelectorVisible(false);
+                    setSelectedFood(null);
+                }}
+                onConfirm={handleConfirmPortion}
             />
         </SafeAreaView>
     );
@@ -165,4 +277,38 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    mealHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+},
+mealCalories: {
+    fontSize: 14,
+},
+foodItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 16,
+    borderTopWidth: 1,
+},
+foodItemLeft: {
+    flex: 1,
+},
+foodName: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginBottom: 4,
+},
+foodMacros: {
+    fontSize: 13,
+    marginBottom: 2,
+},
+foodTime: {
+    fontSize: 12,
+},
+foodCalories: {
+    fontSize: 15,
+    fontWeight: '600',
+},
 });
