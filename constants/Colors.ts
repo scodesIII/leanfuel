@@ -19,8 +19,8 @@ export const Colors = {
   light: {
     // Core UI colors
     text: '#1e293b', // Slate 800
-    background: '#ffffff',
-    card: '#f8fafc', // Slate 50
+    background: '#f8fafc', // Slate 50
+    card: '#ffffff', // pure white
     border: '#e2e8f0', // Slate 200
     muted: '#64748b', // Slate 500 - for secondary text and less prominent elements
 
