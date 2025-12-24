@@ -44,7 +44,7 @@ export default function FoodLoggingScreen() {
 
         setSelectedFood(item);
         setSearchModalVisible(false);
-        
+
         // Small delay to let search modal close before opening portion selector
         setTimeout(() => {
             setPortionSelectorVisible(true);
@@ -52,52 +52,52 @@ export default function FoodLoggingScreen() {
     };
 
     const handleConfirmPortion = async (food: FoodSearchResult, servings: number, mealType: MealType) => {
-      // Close modal immediately for snappy UX
-      setPortionSelectorVisible(false);         
-      setSelectedFood(null);
+        // Close modal immediately for snappy UX
+        setPortionSelectorVisible(false);
+        setSelectedFood(null);
 
-      // Save to database
-      const result = await addLog({
-        food_item_id: food.id,
-        meal_type: mealType,
-        servings,
-        calories: Math.round(food.calories * servings),
-        protein_g: Math.round(food.protein_g * servings),
-        carbs_g: Math.round(food.carbs_g * servings),
-        fat_g: Math.round(food.fat_g * servings),
-        fiber_g: Math.round((food.fiber_g ?? 0) * servings),
-        sugar_g: Math.round((food.sugar_g ?? 0) * servings),
-        sodium_mg: Math.round((food.sodium_mg ?? 0) * servings),
-      });
+        // Save to database
+        const result = await addLog({
+            food_item_id: food.id,
+            meal_type: mealType,
+            servings,
+            calories: Math.round(food.calories * servings),
+            protein_g: Math.round(food.protein_g * servings),
+            carbs_g: Math.round(food.carbs_g * servings),
+            fat_g: Math.round(food.fat_g * servings),
+            fiber_g: Math.round((food.fiber_g ?? 0) * servings),
+            sugar_g: Math.round((food.sugar_g ?? 0) * servings),
+            sodium_mg: Math.round((food.sodium_mg ?? 0) * servings),
+        });
 
-      if (result) {
-        console.log('✅ Food logged:', result.id);
-        fetchTodaysLogs();
-      } else {
-        // TODO: Show error toast
-        console.error('❌ Failed to log food');
-      }
+        if (result) {
+            console.log('✅ Food logged:', result.id);
+            fetchTodaysLogs();
+        } else {
+            // TODO: Show error toast
+            console.error('❌ Failed to log food');
+        }
     };
 
     const formatMealLabel = (meal: MealType) => {
-      return meal.charAt(0).toUpperCase() + meal.slice(1);
+        return meal.charAt(0).toUpperCase() + meal.slice(1);
     };
 
     const groupLogsByMeal = () => {
-      const grouped: Record<string, typeof todaysLogs> = {
-        breakfast: [],
-        lunch: [],
-        dinner: [],
-        snack: [],
-      };
+        const grouped: Record<string, typeof todaysLogs> = {
+            breakfast: [],
+            lunch: [],
+            dinner: [],
+            snack: [],
+        };
 
-      todaysLogs.forEach((log) => {
-        if (grouped[log.meal_type]) {
-            grouped[log.meal_type].push(log);
-        }
-      });
+        todaysLogs.forEach((log) => {
+            if (grouped[log.meal_type]) {
+                grouped[log.meal_type].push(log);
+            }
+        });
 
-      return grouped;
+        return grouped;
     };
 
     const groupedLogs = groupLogsByMeal();
@@ -115,70 +115,70 @@ export default function FoodLoggingScreen() {
 
                 {/* Meal Sections */}
                 {mealTypes.map((meal) => {
-    const foods = groupedLogs[meal] || [];
-    const totalCalories = foods.reduce((sum, log) => sum + log.calories, 0);
+                    const foods = groupedLogs[meal] || [];
+                    const totalCalories = foods.reduce((sum, log) => sum + log.calories, 0);
 
-    const formatTime = (timestamp: string) => {
-        return new Date(timestamp).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-        });
-    };
+                    const formatTime = (timestamp: string) => {
+                        return new Date(timestamp).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true,
+                        });
+                    };
 
-    return (
-        <View
-            key={meal}
-            style={[styles.mealCard, { backgroundColor: cardColor, borderColor }]}
-        >
-            <View style={styles.mealHeader}>
-                <View style={styles.mealHeaderLeft}>
-                    <Text style={[styles.mealTitle, { color: textColor }]}>
-                        {formatMealLabel(meal)}
-                    </Text>
-                    {totalCalories > 0 && (
-                        <Text style={[styles.mealCalories, { color: mutedColor }]}>
-                            {totalCalories} cal
-                        </Text>
-                    )}
-                </View>
-                <TouchableOpacity
-                    style={[styles.addButton, { backgroundColor: primaryColor }]}
-                    onPress={() => handleOpenSearch(meal)}
-                >
-                    <Plus size={20} color="white" />
-                </TouchableOpacity>
-            </View>
+                    return (
+                        <View
+                            key={meal}
+                            style={[styles.mealCard, { backgroundColor: cardColor, borderColor }]}
+                        >
+                            <View style={styles.mealHeader}>
+                                <View style={styles.mealHeaderLeft}>
+                                    <Text style={[styles.mealTitle, { color: textColor }]}>
+                                        {formatMealLabel(meal)}
+                                    </Text>
+                                    {totalCalories > 0 && (
+                                        <Text style={[styles.mealCalories, { color: mutedColor }]}>
+                                            {totalCalories} cal
+                                        </Text>
+                                    )}
+                                </View>
+                                <TouchableOpacity
+                                    style={[styles.addButton, { backgroundColor: primaryColor }]}
+                                    onPress={() => handleOpenSearch(meal)}
+                                >
+                                    <Plus size={20} color="white" />
+                                </TouchableOpacity>
+                            </View>
 
-            {foods.length > 0 ? (
-                foods.map((log) => (
-                    <View key={log.id} style={[styles.foodItem, { borderTopColor: borderColor }]}>
-                        <View style={styles.foodItemLeft}>
-                            <Text style={[styles.foodName, { color: textColor }]}>
-                                {log.food_item?.name ?? 'Unknown Food'}
-                            </Text>
-                            <Text style={[styles.foodMacros, { color: mutedColor }]}>
-                                C: {log.carbs_g}g • P: {log.protein_g}g • F: {log.fat_g}g
-                            </Text>
-                            <Text style={[styles.foodTime, { color: mutedColor }]}>
-                                {formatTime(log.consumed_at)}
-                            </Text>
+                            {foods.length > 0 ? (
+                                foods.map((log) => (
+                                    <View key={log.id} style={[styles.foodItem, { borderTopColor: borderColor }]}>
+                                        <View style={styles.foodItemLeft}>
+                                            <Text style={[styles.foodName, { color: textColor }]}>
+                                                {log.food_item?.name ?? 'Unknown Food'}
+                                            </Text>
+                                            <Text style={[styles.foodMacros, { color: mutedColor }]}>
+                                                C: {log.carbs_g}g • P: {log.protein_g}g • F: {log.fat_g}g
+                                            </Text>
+                                            <Text style={[styles.foodTime, { color: mutedColor }]}>
+                                                {formatTime(log.consumed_at)}
+                                            </Text>
+                                        </View>
+                                        <Text style={[styles.foodCalories, { color: textColor }]}>
+                                            {log.calories} cal
+                                        </Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <View style={styles.emptyMeal}>
+                                    <Text style={[styles.emptyText, { color: mutedColor }]}>
+                                        No foods logged
+                                    </Text>
+                                </View>
+                            )}
                         </View>
-                        <Text style={[styles.foodCalories, { color: textColor }]}>
-                            {log.calories} cal
-                        </Text>
-                    </View>
-                ))
-            ) : (
-                <View style={styles.emptyMeal}>
-                    <Text style={[styles.emptyText, { color: mutedColor }]}>
-                        No foods logged
-                    </Text>
-                </View>
-            )}
-        </View>
-    );
-})}
+                    );
+                })}
             </ScrollView>
 
             {/* Floating Action Button */}
@@ -278,37 +278,37 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     mealHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-},
-mealCalories: {
-    fontSize: 14,
-},
-foodItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    padding: 16,
-    borderTopWidth: 1,
-},
-foodItemLeft: {
-    flex: 1,
-},
-foodName: {
-    fontSize: 15,
-    fontWeight: '500',
-    marginBottom: 4,
-},
-foodMacros: {
-    fontSize: 13,
-    marginBottom: 2,
-},
-foodTime: {
-    fontSize: 12,
-},
-foodCalories: {
-    fontSize: 15,
-    fontWeight: '600',
-},
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    mealCalories: {
+        fontSize: 14,
+    },
+    foodItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        padding: 16,
+        borderTopWidth: 1,
+    },
+    foodItemLeft: {
+        flex: 1,
+    },
+    foodName: {
+        fontSize: 15,
+        fontWeight: '500',
+        marginBottom: 4,
+    },
+    foodMacros: {
+        fontSize: 13,
+        marginBottom: 2,
+    },
+    foodTime: {
+        fontSize: 12,
+    },
+    foodCalories: {
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });
