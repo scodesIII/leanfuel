@@ -14,6 +14,7 @@ interface ProgressRingProps {
     /** Gradient colors [light, base, dark] */
     gradientColors: [string, string, string];
     /** Center content to display inside the ring */
+    showPercentage?: boolean; // Whether to show percentage text inside the ring
     children?: React.ReactNode;
 }
 
@@ -23,6 +24,7 @@ export const ProgressRing = ({
     strokeWidth = 16,
     gradientColors,
     children,
+    showPercentage = false,
 }: ProgressRingProps) => {
     // Ring progress animation
     const ringProgress = useRef(new Animated.Value(0)).current;
@@ -48,7 +50,7 @@ export const ProgressRing = ({
     });
 
     return (
-        <View style={[styles.container, { width: size, height: size }]}>
+        <View style={[styles.container, { width: size, height: size, position: 'relative' }]}>
             <Svg width={size} height={size} style={styles.ring}>
                 <Defs>
                     <SvgLinearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -68,6 +70,7 @@ export const ProgressRing = ({
                     fill="none"
                 />
 
+
                 {/* Progress ring with gradient */}
                 <AnimatedCircle
                     cx={size / 2}
@@ -83,6 +86,12 @@ export const ProgressRing = ({
                     origin={`${size / 2}, ${size / 2}`}
                 />
             </Svg>
+
+            {showPercentage && (
+                <View style={styles.percentageContainer}>
+                    <Text style={styles.percentageText}>{Math.round(progress)}%</Text>
+                </View>
+            )}
 
             {/* Center content */}
             {children && <View style={styles.centerContent}>{children}</View>}
@@ -106,5 +115,19 @@ const styles = StyleSheet.create({
         position: 'absolute',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    percentageContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    percentageText: {
+        fontSize: 12,
+        fontWeight: '700',
     },
 });

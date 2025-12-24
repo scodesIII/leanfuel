@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
@@ -7,6 +7,10 @@ import { FoodSearchModal } from '@/components/food/FoodSearchModal';
 import { FoodSearchResult, MealType } from '@/types/food';
 import { PortionSelector } from '@/components/food/PortionSelector';
 import { useFoodLogStore } from '@/stores/foodLogStore';
+import { DailySummaryMini } from '@/components/food/DailySummaryMini';
+import { useUserStore } from '@/stores/userStore';
+
+
 
 export default function FoodLoggingScreen() {
     const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -16,9 +20,21 @@ export default function FoodLoggingScreen() {
     const addLog = useFoodLogStore((state) => state.addLog);
     const { todaysLogs, isLoading, fetchTodaysLogs } = useFoodLogStore();
 
+    const { profile } = useUserStore();
+    const { todaysSummary, fetchTodaysSummary } = useFoodLogStore();
+
+    const consumed = todaysSummary?.total_calories ?? 0;
+    const goal = profile?.daily_calorie_goal ?? 2000;
+    const remaining = Math.max(goal - consumed, 0);
+
+
+
+
+
     // Fetch logs on mount
     useEffect(() => {
         fetchTodaysLogs();
+
     }, []);
 
     const backgroundColor = useThemeColor({}, 'background');
@@ -108,11 +124,12 @@ export default function FoodLoggingScreen() {
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={[styles.title, { color: textColor }]}>Food Diary</Text>
-                    <Text style={[styles.subtitle, { color: mutedColor }]}>
-                        Track your meals for today
-                    </Text>
+
+                    <DailySummaryMini consumed={consumed} goal={goal} remaining={remaining}/>
                 </View>
 
+
+                <View style={styles.mealsContainer}>
                 {/* Meal Sections */}
                 {mealTypes.map((meal) => {
                     const foods = groupedLogs[meal] || [];
@@ -179,6 +196,7 @@ export default function FoodLoggingScreen() {
                         </View>
                     );
                 })}
+                </View>
             </ScrollView>
 
             {/* Floating Action Button */}
@@ -221,15 +239,33 @@ const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 24,
         paddingTop: 16,
-        paddingBottom: 24,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e2e8f0',
+        backgroundColor: '#ffffff',
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.04,
+                shadowRadius: 8,
+            },
+            android: {
+                elevation: 2,
+            },
+        }),
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
+        paddingBottom: 16,
     },
     subtitle: {
         fontSize: 14,
         marginTop: 4,
+    },
+    mealsContainer: {
+        paddingTop: 16,
     },
     mealCard: {
         marginHorizontal: 16,
@@ -237,6 +273,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         overflow: 'hidden',
+        // marginTop: 16,
     },
     mealHeader: {
         flexDirection: 'row',
