@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         overflow: 'hidden',
-        // marginTop: 16,
     },
     mealHeader: {
         flexDirection: 'row',
