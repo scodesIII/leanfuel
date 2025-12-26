@@ -9,6 +9,7 @@ import { PortionSelector } from '@/components/food/PortionSelector';
 import { useFoodLogStore } from '@/stores/foodLogStore';
 import { DailySummaryMini } from '@/components/food/DailySummaryMini';
 import { useUserStore } from '@/stores/userStore';
+import { MealCard } from '@/components/food/MealCard';
 
 
 
@@ -130,72 +131,14 @@ export default function FoodLoggingScreen() {
 
 
                 <View style={styles.mealsContainer}>
-                {/* Meal Sections */}
-                {mealTypes.map((meal) => {
-                    const foods = groupedLogs[meal] || [];
-                    const totalCalories = foods.reduce((sum, log) => sum + log.calories, 0);
-
-                    const formatTime = (timestamp: string) => {
-                        return new Date(timestamp).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: '2-digit',
-                            hour12: true,
-                        });
-                    };
-
-                    return (
-                        <View
+                    {mealTypes.map((meal) => (
+                        <MealCard
                             key={meal}
-                            style={[styles.mealCard, { backgroundColor: cardColor, borderColor }]}
-                        >
-                            <View style={styles.mealHeader}>
-                                <View style={styles.mealHeaderLeft}>
-                                    <Text style={[styles.mealTitle, { color: textColor }]}>
-                                        {formatMealLabel(meal)}
-                                    </Text>
-                                    {totalCalories > 0 && (
-                                        <Text style={[styles.mealCalories, { color: mutedColor }]}>
-                                            {totalCalories} cal
-                                        </Text>
-                                    )}
-                                </View>
-                                <TouchableOpacity
-                                    style={[styles.addButton, { backgroundColor: primaryColor }]}
-                                    onPress={() => handleOpenSearch(meal)}
-                                >
-                                    <Plus size={20} color="white" />
-                                </TouchableOpacity>
-                            </View>
-
-                            {foods.length > 0 ? (
-                                foods.map((log) => (
-                                    <View key={log.id} style={[styles.foodItem, { borderTopColor: borderColor }]}>
-                                        <View style={styles.foodItemLeft}>
-                                            <Text style={[styles.foodName, { color: textColor }]}>
-                                                {log.food_item?.name ?? 'Unknown Food'}
-                                            </Text>
-                                            <Text style={[styles.foodMacros, { color: mutedColor }]}>
-                                                C: {log.carbs_g}g • P: {log.protein_g}g • F: {log.fat_g}g
-                                            </Text>
-                                            <Text style={[styles.foodTime, { color: mutedColor }]}>
-                                                {formatTime(log.consumed_at)}
-                                            </Text>
-                                        </View>
-                                        <Text style={[styles.foodCalories, { color: textColor }]}>
-                                            {log.calories} cal
-                                        </Text>
-                                    </View>
-                                ))
-                            ) : (
-                                <View style={styles.emptyMeal}>
-                                    <Text style={[styles.emptyText, { color: mutedColor }]}>
-                                        No foods logged
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    );
-                })}
+                            mealType={meal}
+                            foods={groupedLogs[meal] || []}
+                            onAddPress={() => handleOpenSearch(meal)}
+                        />
+                    ))}
                 </View>
             </ScrollView>
 
@@ -266,6 +209,7 @@ const styles = StyleSheet.create({
     },
     mealsContainer: {
         paddingTop: 16,
+        paddingHorizontal: 16,
     },
     mealCard: {
         marginHorizontal: 16,
