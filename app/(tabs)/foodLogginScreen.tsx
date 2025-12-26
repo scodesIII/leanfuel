@@ -211,37 +211,6 @@ const styles = StyleSheet.create({
         paddingTop: 16,
         paddingHorizontal: 16,
     },
-    mealCard: {
-        marginHorizontal: 16,
-        marginBottom: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        overflow: 'hidden',
-    },
-    mealHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-    },
-    mealTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    addButton: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    emptyMeal: {
-        paddingHorizontal: 16,
-        paddingBottom: 16,
-    },
-    emptyText: {
-        fontSize: 14,
-    },
     fab: {
         position: 'absolute',
         bottom: 24,
@@ -256,39 +225,5 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-    },
-    mealHeaderLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    mealCalories: {
-        fontSize: 14,
-    },
-    foodItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        padding: 16,
-        borderTopWidth: 1,
-    },
-    foodItemLeft: {
-        flex: 1,
-    },
-    foodName: {
-        fontSize: 15,
-        fontWeight: '500',
-        marginBottom: 4,
-    },
-    foodMacros: {
-        fontSize: 13,
-        marginBottom: 2,
-    },
-    foodTime: {
-        fontSize: 12,
-    },
-    foodCalories: {
-        fontSize: 15,
-        fontWeight: '600',
     },
 });
