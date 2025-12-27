@@ -14,7 +14,7 @@ export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigato
     const backgroundColor = useThemeColor({}, 'background');
     const borderColor = useThemeColor({}, 'border');
 
-    
+
     const isSameDay = (date1: Date, date2: Date) => {
         return (
             date1.getFullYear() === date2.getFullYear() &&
@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         gap: 20,
+        marginBottom: 16,
     },
     arrowButton: {
         width: 40,

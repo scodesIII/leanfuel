@@ -10,6 +10,8 @@ import { useFoodLogStore } from '@/stores/foodLogStore';
 import { DailySummaryMini } from '@/components/food/DailySummaryMini';
 import { useUserStore } from '@/stores/userStore';
 import { MealCard } from '@/components/food/MealCard';
+import { DateNavigator } from '@/components/food/DateNavigator';
+
 
 
 
@@ -124,7 +126,11 @@ export default function FoodLoggingScreen() {
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text style={[styles.title, { color: textColor }]}>Food Diary</Text>
+                    <DateNavigator
+                        selectedDate={new Date()}
+                        onPrevious={() => console.log('prev')}
+                        onNext={() => console.log('next')}
+                    />
 
                     <DailySummaryMini consumed={consumed} goal={goal} remaining={remaining}/>
                 </View>
