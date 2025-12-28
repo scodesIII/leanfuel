@@ -154,6 +154,7 @@ interface FoodLogActions {
     fetchTodaysLogs: () => Promise<void>;
     fetchTodaysSummary: () => Promise<void>;
     fetchLogsForDate: (date: string) => Promise<void>;
+    fetchSummaryForDate: (date: string) => Promise<void>;
 
     // MUTATION ACTIONS (Write to database)
     // ----------------
@@ -309,6 +310,39 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             });
         }
     },
+
+    /**
+     * fetchSummaryForDate - Get summary for any date
+     *
+     * Use case: User browses summary history
+     */
+    fetchSummaryForDate: async (date: string) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                set({ error: 'Not authenticated' });
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from('daily_nutrition_summary')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('date', date)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            set({ todaysSummary: data });
+        } catch (error) {
+            console.error('Error fetching summary for date:', error);
+            set({
+                error: error instanceof Error ? error.message : 'Failed to fetch summary',
+            });
+        }
+    },
+
 
 
     // ============================================================================
@@ -479,6 +513,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         set({ selectedDate: date });
         // Automatically fetch logs for the new date
         get().fetchLogsForDate(date);
+        get().fetchSummaryForDate(date);
     },
 
     clearError: () => {
