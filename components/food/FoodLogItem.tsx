@@ -1,29 +1,26 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
+import { Trash2 } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useRef } from 'react';
+import { FoodLog } from '@/stores/foodLogStore';
 
-interface FoodLog {
-    id: string;
-    meal_type: string;
-    servings: number;
-    calories: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
-    consumed_at: string;
-    food_item?: {
-        name: string;
-    } | null;
-}
+
 
 interface FoodLogItemProps {
     log: FoodLog;
+    onDelete: (id: string) => void;
+    onPress: (log: FoodLog) => void;
 }
 
-export function FoodLogItem({ log }: FoodLogItemProps) {
+export function FoodLogItem({ log, onDelete, onPress }: FoodLogItemProps) {
+    const swipeableRef = useRef<Swipeable>(null);
+    
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
     const borderColor = useThemeColor({}, 'border');
-    const surfaceColor = useThemeColor({}, 'background');
+    const cardColor = useThemeColor({}, 'card');
 
     const formatTime = (timestamp: string) => {
         return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -38,44 +35,77 @@ export function FoodLogItem({ log }: FoodLogItemProps) {
         return `${servings} servings`;
     };
 
+    const handleDelete = () => {
+        // Haptic feedback for both platforms
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        
+        // Close swipeable before deleting
+        swipeableRef.current?.close();
+        
+        // Trigger delete
+        onDelete(log.id);
+    };
+
+    const renderRightActions = () => {
+        return (
+            <TouchableOpacity
+                style={styles.deleteAction}
+                onPress={handleDelete}
+                activeOpacity={0.8}
+            >
+                <Trash2 size={22} color="#fff" />
+                <Text style={styles.deleteText}>Delete</Text>
+            </TouchableOpacity>
+        );
+    };
+
     return (
-        <View style={[styles.container, { borderTopColor: borderColor }]}>
-            <View style={styles.leftContent}>
-                {/* Food Name */}
-                <Text style={[styles.foodName, { color: textColor }]}>
-                    {log.food_item?.name ?? 'Unknown Food'}
-                </Text>
-
-                {/* Meta: servings + time */}
-                <Text style={[styles.meta, { color: mutedColor }]}>
-                    {formatServings(log.servings)} · {formatTime(log.consumed_at)}
-                </Text>
-
-                {/* Macro Pills */}
-                <View style={styles.macroPills}>
-                    <View style={[styles.pill, { backgroundColor: surfaceColor }]}>
-                        <Text style={[styles.pillText, { color: mutedColor }]}>
-                            P: {log.protein_g}g
-                        </Text>
-                    </View>
-                    <View style={[styles.pill, { backgroundColor: surfaceColor }]}>
-                        <Text style={[styles.pillText, { color: mutedColor }]}>
-                            C: {log.carbs_g}g
-                        </Text>
-                    </View>
-                    <View style={[styles.pill, { backgroundColor: surfaceColor }]}>
-                        <Text style={[styles.pillText, { color: mutedColor }]}>
-                            F: {log.fat_g}g
-                        </Text>
+        <Swipeable
+            ref={swipeableRef}
+            renderRightActions={renderRightActions}
+            overshootRight={false}
+            friction={2}
+            rightThreshold={40}
+        >
+            <TouchableOpacity
+                style={[styles.container, { backgroundColor: cardColor, borderTopColor: borderColor }]}
+                onPress={() => onPress(log)}
+                activeOpacity={0.7}
+            >
+                <View style={styles.leftContent}>
+                    <Text style={[styles.foodName, { color: textColor }]}>
+                        {log.food_item?.name ?? 'Unknown Food'}
+                    </Text>
+                    <Text style={[styles.meta, { color: mutedColor }]}>
+                        {formatServings(log.servings)} · {formatTime(log.consumed_at)}
+                    </Text>
+                    <View style={styles.macroPills}>
+                        <View style={[styles.pill, { backgroundColor: borderColor }]}>
+                            <Text style={[styles.pillText, { color: mutedColor }]}>
+                                P: {log.protein_g}g
+                            </Text>
+                        </View>
+                        <View style={[styles.pill, { backgroundColor: borderColor }]}>
+                            <Text style={[styles.pillText, { color: mutedColor }]}>
+                                C: {log.carbs_g}g
+                            </Text>
+                        </View>
+                        <View style={[styles.pill, { backgroundColor: borderColor }]}>
+                            <Text style={[styles.pillText, { color: mutedColor }]}>
+                                F: {log.fat_g}g
+                            </Text>
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            {/* Calories */}
-            <Text style={[styles.calories, { color: textColor }]}>
-                {log.calories}
-            </Text>
-        </View>
+                <View style={styles.rightContent}>
+                    <Text style={[styles.calories, { color: textColor }]}>
+                        {log.calories}
+                    </Text>
+                    <Text style={[styles.chevron, { color: mutedColor }]}>›</Text>
+                </View>
+            </TouchableOpacity>
+        </Swipeable>
     );
 }
 
@@ -114,9 +144,31 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '500',
     },
+    rightContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     calories: {
         fontSize: 14,
         fontWeight: '600',
         fontVariant: ['tabular-nums'],
+    },
+    chevron: {
+        fontSize: 20,
+        fontWeight: '300',
+    },
+    deleteAction: {
+        backgroundColor: '#EF4444',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 80,
+        flexDirection: 'column',
+        gap: 4,
+    },
+    deleteText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: '600',
     },
 });

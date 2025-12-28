@@ -3,26 +3,29 @@ import { Plus } from 'lucide-react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { FoodLogItem } from '@/components/food/FoodLogItem';
 import { MealType } from '@/types/food';
+import { FoodLog } from '@/stores/foodLogStore';
 
 
-interface FoodLog {
-    id: string;
-    meal_type: string;
-    servings: number;
-    calories: number;
-    protein_g: number;
-    carbs_g: number;
-    fat_g: number;
-    consumed_at: string;
-    food_item?: {
-        name: string;
-    } | null;
-}
+// interface FoodLog {
+//     id: string;
+//     meal_type: string;
+//     servings: number;
+//     calories: number;
+//     protein_g: number;
+//     carbs_g: number;
+//     fat_g: number;
+//     consumed_at: string;
+//     food_item?: {
+//         name: string;
+//     } | null;
+// }
 
 interface MealCardProps {
     mealType: MealType;
     foods: FoodLog[];
     onAddPress: () => void;
+    onDeleteLog: (id: string) => void;
+    onPressLog: (log: FoodLog) => void; 
 }
 
 // Meal configuration: icon and background color
@@ -33,7 +36,7 @@ const mealConfig: Record<MealType, { icon: string; bg: string }> = {
     snack: { icon: '🍎', bg: '#D1FAE5' },
 };
 
-export function MealCard({ mealType, foods, onAddPress }: MealCardProps) {
+export function MealCard({ mealType, foods, onAddPress, onDeleteLog, onPressLog }: MealCardProps) {
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
     const cardColor = useThemeColor({}, 'card');
@@ -78,7 +81,12 @@ export function MealCard({ mealType, foods, onAddPress }: MealCardProps) {
             {foods.length > 0 ? (
                 <View style={styles.foodList}>
                     {foods.map((log) => (
-                        <FoodLogItem key={log.id} log={log} />
+                        <FoodLogItem 
+                            key={log.id} 
+                            log={log} 
+                            onDelete={onDeleteLog}
+                            onPress={onPressLog} 
+                        />
                     ))}
                 </View>
             ) : (
