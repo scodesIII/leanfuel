@@ -21,24 +21,14 @@ export default function FoodLoggingScreen() {
     const [portionSelectorVisible, setPortionSelectorVisible] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodSearchResult | null>(null);
     const addLog = useFoodLogStore((state) => state.addLog);
-    const { todaysLogs, isLoading, fetchTodaysLogs } = useFoodLogStore();
 
     const { profile } = useUserStore();
-    const { todaysSummary, fetchTodaysSummary } = useFoodLogStore();
+    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchTodaysSummary, fetchTodaysLogs, selectedDate, setSelectedDate } = useFoodLogStore();
 
     const consumed = todaysSummary?.total_calories ?? 0;
     const goal = profile?.daily_calorie_goal ?? 2000;
     const remaining = Math.max(goal - consumed, 0);
 
-
-
-
-
-    // Fetch logs on mount
-    useEffect(() => {
-        fetchTodaysLogs();
-
-    }, []);
 
     const backgroundColor = useThemeColor({}, 'background');
     const cardColor = useThemeColor({}, 'card');
@@ -121,18 +111,48 @@ export default function FoodLoggingScreen() {
 
     const groupedLogs = groupLogsByMeal();
 
+
+
+    const handlePreviousDay = () => {
+        const current = new Date(selectedDate);
+        current.setDate(current.getDate() - 1);
+        setSelectedDate(current.toISOString().split('T')[0]);
+    };
+
+    const handleNextDay = () => {
+        const current = new Date(selectedDate);
+        current.setDate(current.getDate() + 1);
+        const today = new Date().toISOString().split('T')[0];
+        const next = current.toISOString().split('T')[0];
+
+        if (next <= today) {
+            setSelectedDate(next);
+        }
+    };
+
+
+    // Fetch logs on mount
+    useEffect(() => {
+        fetchTodaysLogs();
+
+        const today = new Date().toISOString().split('T')[0];
+        useFoodLogStore.getState().fetchLogsForDate(today);
+        useFoodLogStore.getState().fetchSummaryForDate(today);
+
+    }, []);
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor }]}>
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <View style={styles.header}>
                     <DateNavigator
-                        selectedDate={new Date()}
-                        onPrevious={() => console.log('prev')}
-                        onNext={() => console.log('next')}
+                        selectedDate={new Date(selectedDate)}
+                        onPrevious={handlePreviousDay}
+                        onNext={handleNextDay}
                     />
 
-                    <DailySummaryMini consumed={consumed} goal={goal} remaining={remaining}/>
+                    <DailySummaryMini consumed={consumed} goal={goal} remaining={remaining} />
                 </View>
 
 
