@@ -6,7 +6,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { FoodSearchModal } from '@/components/food/FoodSearchModal';
 import { FoodSearchResult, MealType } from '@/types/food';
 import { PortionSelector } from '@/components/food/PortionSelector';
-import { useFoodLogStore } from '@/stores/foodLogStore';
+import { FoodLog, useFoodLogStore } from '@/stores/foodLogStore';
 import { DailySummaryMini } from '@/components/food/DailySummaryMini';
 import { useUserStore } from '@/stores/userStore';
 import { MealCard } from '@/components/food/MealCard';
@@ -23,7 +23,7 @@ export default function FoodLoggingScreen() {
     const addLog = useFoodLogStore((state) => state.addLog);
 
     const { profile } = useUserStore();
-    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchTodaysSummary, fetchTodaysLogs, selectedDate, setSelectedDate } = useFoodLogStore();
+    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchTodaysSummary, fetchTodaysLogs, selectedDate, setSelectedDate, deleteLog } = useFoodLogStore();
 
     const consumed = todaysSummary?.total_calories ?? 0;
     const goal = profile?.daily_calorie_goal ?? 2000;
@@ -131,6 +131,17 @@ export default function FoodLoggingScreen() {
     };
 
 
+    const handleDeleteLog = async (id: string) => {
+        await deleteLog(id);
+    };
+
+    const handlePressLog = (log: FoodLog) => {
+        // For now, just log it
+        // Later: open edit modal
+        console.log('Edit log:', log.id);
+    };
+
+
     // Fetch logs on mount
     useEffect(() => {
         fetchTodaysLogs();
@@ -163,6 +174,8 @@ export default function FoodLoggingScreen() {
                             mealType={meal}
                             foods={groupedLogs[meal] || []}
                             onAddPress={() => handleOpenSearch(meal)}
+                            onDeleteLog={handleDeleteLog}
+                            onPressLog={handlePressLog}  
                         />
                     ))}
                 </View>

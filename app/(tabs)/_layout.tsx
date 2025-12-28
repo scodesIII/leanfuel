@@ -36,7 +36,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="foodLogginScreen"
+        name="foodLoggingScreen"
         options={{
           title: 'Food', // refers to tab title
           tabBarLabel: 'Food', // refers to tab label
