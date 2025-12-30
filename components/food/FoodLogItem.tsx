@@ -1,9 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
-import { Trash2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { useRef } from 'react';
 import { FoodLog } from '@/stores/foodLogStore';
 
 
@@ -15,7 +12,6 @@ interface FoodLogItemProps {
 }
 
 export function FoodLogItem({ log, onDelete, onPress }: FoodLogItemProps) {
-    const swipeableRef = useRef<Swipeable>(null);
     
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
@@ -37,33 +33,18 @@ export function FoodLogItem({ log, onDelete, onPress }: FoodLogItemProps) {
 
     const handleDelete = () => {
         // Haptic feedback for both platforms
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        
-        // Close swipeable before deleting
-        swipeableRef.current?.close();
-        
-        // Trigger delete
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);        
         onDelete(log.id);
     };
 
-    const renderRightActions = () => {
-        return (
-            <TouchableOpacity
-                style={styles.deleteAction}
-                onPress={handleDelete}
-                activeOpacity={0.8}
-            >
-                <Trash2 size={22} color="#fff" />
-                <Text style={styles.deleteText}>Delete</Text>
-            </TouchableOpacity>
-        );
-    };
 
     return (
         
             <TouchableOpacity
                 style={[styles.container, { backgroundColor: cardColor, borderTopColor: borderColor }]}
                 onPress={() => onPress(log)}
+                onLongPress={handleDelete}
+                delayLongPress={500}
                 activeOpacity={0.7}
             >
                 <View style={styles.leftContent}>
@@ -151,18 +132,5 @@ const styles = StyleSheet.create({
     chevron: {
         fontSize: 20,
         fontWeight: '300',
-    },
-    deleteAction: {
-        backgroundColor: '#EF4444',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 80,
-        flexDirection: 'column',
-        gap: 4,
-    },
-    deleteText: {
-        color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
     },
 });
