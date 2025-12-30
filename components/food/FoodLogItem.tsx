@@ -60,13 +60,7 @@ export function FoodLogItem({ log, onDelete, onPress }: FoodLogItemProps) {
     };
 
     return (
-        <Swipeable
-            ref={swipeableRef}
-            renderRightActions={renderRightActions}
-            overshootRight={false}
-            friction={2}
-            rightThreshold={40}
-        >
+        
             <TouchableOpacity
                 style={[styles.container, { backgroundColor: cardColor, borderTopColor: borderColor }]}
                 onPress={() => onPress(log)}
@@ -105,7 +99,7 @@ export function FoodLogItem({ log, onDelete, onPress }: FoodLogItemProps) {
                     <Text style={[styles.chevron, { color: mutedColor }]}>›</Text>
                 </View>
             </TouchableOpacity>
-        </Swipeable>
+       
     );
 }
 
