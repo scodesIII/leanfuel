@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { FoodLog } from '@/stores/foodLogStore';
@@ -34,7 +34,21 @@ export function FoodLogItem({ log, onDelete, onPress }: FoodLogItemProps) {
     const handleDelete = () => {
         // Haptic feedback for both platforms
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);        
-        onDelete(log.id);
+        Alert.alert(
+            'Delete Food',
+            `Are you sure you want to delete "${log.food_item?.name}"?`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => onDelete(log.id),
+                },
+            ]
+        );
     };
 
 
