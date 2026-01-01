@@ -174,7 +174,7 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
                                 <TouchableOpacity
                                     key={meal}
                                     onPress={() => setMealType(meal)}
-                                    style={[styles.mealButton, { backgroundColor: isActive ? primaryColor : 'cardColor' }]}
+                                    style={[styles.mealButton, { backgroundColor: isActive ? primaryColor : cardColor }]}
                                     >
                                         <Text style={styles.mealButtonIcon}>
                                             {icons[meal]}
@@ -228,7 +228,19 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
 
                 {/* Footer buttons */}
                 <View style={styles.footer}>
-                    {/* Save, Delete buttons */}
+                    <TouchableOpacity
+                        style={[styles.saveButton, { backgroundColor: primaryColor }]}
+                        onPress={handleSave}
+                    >
+                        <Text style={styles.saveButtonText}>Save Changes</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={handleDelete}
+                    >
+                        <Text style={styles.deleteButtonText}>Delete Entry</Text>
+                    </TouchableOpacity>
                 </View>
             </SafeAreaView>
             
@@ -240,6 +252,7 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
     },
     header: {
         flexDirection: 'row',
@@ -345,5 +358,30 @@ nutrientValue: {
 nutrientLabel: {
     fontSize: 12,
 },
-    footer: {},
+    footer: {
+    padding: 16,
+    paddingBottom: 24,
+    gap: 12,
+},
+    saveButton: {
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    deleteButton: {
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    },
+    deleteButtonText: {
+        color: '#ef4444',
+        fontSize: 16,
+        fontWeight: '600',
+    },
 });
