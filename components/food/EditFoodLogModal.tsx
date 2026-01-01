@@ -106,7 +106,7 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
                     </TouchableOpacity>
                     
                     <Text style={[styles.headerTitle, { color: textColor }]}>
-                        Edit Entry
+                        Edit Food
                     </Text>
                     
                     <View style={styles.placeholder} />
@@ -190,7 +190,40 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
 
                 {/* Nutrients Section */}
                 <View style={[styles.section, { borderBottomColor: borderColor }]}>
-                    {/* Label + grid of 4 items */}
+                    <View style={styles.nutrientGrid}>
+                        <View style={styles.nutrientItem}>
+                            <Text style={[styles.nutrientLabel, { color: mutedColor }]}>
+                                Calories
+                            </Text>
+                            <Text style={[styles.nutrientValue, { color: textColor }]}>
+                                {newCalories} kcal
+                            </Text>
+                        </View>
+                        <View style={styles.nutrientItem}>
+                            <Text style={[styles.nutrientLabel, { color: mutedColor }]}>
+                                Protein
+                            </Text>
+                            <Text style={[styles.nutrientValue, { color: textColor }]}>
+                                {newProtein}g
+                            </Text>
+                        </View>
+                        <View style={styles.nutrientItem}>
+                            <Text style={[styles.nutrientLabel, { color: mutedColor }]}>
+                                Carbs
+                            </Text>
+                            <Text style={[styles.nutrientValue, { color: textColor }]}>
+                                {newCarbs}g
+                            </Text>
+                        </View>
+                        <View style={styles.nutrientItem}>
+                            <Text style={[styles.nutrientLabel, { color: mutedColor }]}>
+                                Fat
+                            </Text>
+                            <Text style={[styles.nutrientValue, { color: textColor }]}>
+                                {newFat}g
+                            </Text>
+                        </View>
+                    </View>
                 </View>
 
                 {/* Footer buttons */}
@@ -291,5 +324,26 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '500',
     },
+    nutrientGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+},
+nutrientItem: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 16,
+    backgroundColor: '#f8fafc',  // or use cardColor
+    borderRadius: 12,
+    alignItems: 'center',
+},
+nutrientValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+},
+nutrientLabel: {
+    fontSize: 12,
+},
     footer: {},
 });
