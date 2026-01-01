@@ -92,9 +92,158 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
     if (!log) return null;
 
     return (
-        <Modal visible={visible}>
-            <Text>Edit Modal Placeholder</Text>
+        <Modal 
+            visible={visible}
+            animationType="slide"
+            presentationStyle="pageSheet"
+            onRequestClose={onClose}
+        >
+            <SafeAreaView style={[styles.container, { backgroundColor }]}>
+                {/* Header */}
+                <View style={[styles.header, { borderBottomColor: borderColor }]}>
+                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                        <X size={24} color={textColor} />
+                    </TouchableOpacity>
+                    
+                    <Text style={[styles.headerTitle, { color: textColor }]}>
+                        Edit Entry
+                    </Text>
+                    
+                    <View style={styles.placeholder} />
+                </View>
+
+                {/* Food info */}
+                <View style={[styles.foodInfo, { borderBottomColor: borderColor }]}>
+                    <Text style={[styles.foodName, { color: textColor }]}>
+                        {log.food_item?.name ?? 'Unknown Food'}
+                    </Text>
+                    <Text style={[styles.foodCalories, { color: mutedColor }]}>
+                        {newCalories} kcal
+                    </Text>
+                </View>
+
+                {/* Servings Section */}
+                <View style={[styles.section, { borderBottomColor: borderColor }]}>
+                    <Text style={[styles.sectionLabel, { color: mutedColor }]}>
+                        SERVINGS
+                    </Text>
+                    <View style={styles.servingControl}>
+                        <TouchableOpacity
+                            onPress={() => adjustServings(-1)}
+                            style={[styles.servingButton, { backgroundColor: borderColor }]}
+                            disabled={servings <= SERVING_STEPS[0]}
+                        >
+                            <Minus size={20} color={servings <= SERVING_STEPS[0] ? mutedColor : textColor} />
+                        </TouchableOpacity>
+                        
+                        <View style={styles.servingValue}>
+                            <Text style={[styles.servingNumber, { color: textColor }]}>
+                                {servings}
+                            </Text>
+                            <Text style={[styles.servingUnit, { color: mutedColor }]}>
+                                {servings === 1 ? 'serving' : 'servings'}
+                            </Text>
+                        </View>
+                        
+                        <TouchableOpacity
+                            onPress={() => adjustServings(1)}
+                            style={[styles.servingButton, { backgroundColor: borderColor }]}
+                            disabled={servings >= SERVING_STEPS[SERVING_STEPS.length - 1]}
+                        >
+                            <Plus size={20} color={servings >= SERVING_STEPS[SERVING_STEPS.length - 1] ? mutedColor : textColor} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Meal Type Section */}
+                <View style={[styles.section, { borderBottomColor: borderColor }]}>
+                    {/* Label + 4 buttons */}
+                </View>
+
+                {/* Nutrients Section */}
+                <View style={[styles.section, { borderBottomColor: borderColor }]}>
+                    {/* Label + grid of 4 items */}
+                </View>
+
+                {/* Footer buttons */}
+                <View style={styles.footer}>
+                    {/* Save, Delete buttons */}
+                </View>
+            </SafeAreaView>
+            
         </Modal>
     );
 
 }
+
+
+const styles = StyleSheet.create({
+    container: {
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+    },
+    closeButton: {
+        padding: 4,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+    },
+    placeholder: {
+        width:  32,
+    },
+    foodInfo: {
+    padding: 20,
+    borderBottomWidth: 1,
+    },
+    foodName: {
+        fontSize: 20,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    foodCalories: {
+        fontSize: 14,
+    },
+    section: {
+    padding: 20,
+    borderBottomWidth: 1,
+    },
+    sectionLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        letterSpacing: 1,
+        marginBottom: 16,
+    },
+    servingControl: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 24,
+    },
+    servingButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    servingValue: {
+        alignItems: 'center',
+        minWidth: 100,
+    },
+    servingNumber: {
+        fontSize: 32,
+        fontWeight: '700',
+    },
+    servingUnit: {
+        fontSize: 14,
+        marginTop: 4,
+    },
+    footer: {},
+});
