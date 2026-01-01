@@ -11,6 +11,7 @@ import { DailySummaryMini } from '@/components/food/DailySummaryMini';
 import { useUserStore } from '@/stores/userStore';
 import { MealCard } from '@/components/food/MealCard';
 import { DateNavigator } from '@/components/food/DateNavigator';
+import { EditFoodLogModal } from '@/components/food/EditFoodLogModal';
 
 
 
@@ -22,8 +23,11 @@ export default function FoodLoggingScreen() {
     const [selectedFood, setSelectedFood] = useState<FoodSearchResult | null>(null);
     const addLog = useFoodLogStore((state) => state.addLog);
 
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [selectedLog, setSelectedLog] = useState<FoodLog | null>(null);
+
     const { profile } = useUserStore();
-    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchTodaysSummary, fetchTodaysLogs, selectedDate, setSelectedDate, deleteLog } = useFoodLogStore();
+    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchTodaysSummary, fetchTodaysLogs, selectedDate, setSelectedDate, deleteLog, updateLog } = useFoodLogStore();
 
     const consumed = todaysSummary?.total_calories ?? 0;
     const goal = profile?.daily_calorie_goal ?? 2000;
@@ -136,9 +140,37 @@ export default function FoodLoggingScreen() {
     };
 
     const handlePressLog = (log: FoodLog) => {
-        // For now, just log it
-        // Later: open edit modal
-        console.log('Edit log:', log.id);
+        setSelectedLog(log);
+        setEditModalVisible(true);
+    };
+
+    const handleSaveLog = async (id: string, updates: { servings: number; meal_type: MealType }) => {
+        const originalLog = todaysLogs.find(log => log.id === id);
+        if (!originalLog) return;
+
+        //
+        const baseCalories = originalLog.calories / originalLog.servings;
+        const baseProtein = originalLog.protein_g / originalLog.servings;
+        const baseCarbs = originalLog.carbs_g / originalLog.servings;
+        const baseFat = originalLog.fat_g / originalLog.servings;
+        const baseFiber = originalLog.fiber_g / originalLog.servings;
+        const baseSugar = originalLog.sugar_g / originalLog.servings;
+        const baseSodium = originalLog.sodium_mg / originalLog.servings;
+
+        await updateLog(id, {
+            servings: updates.servings,
+            meal_type: updates.meal_type,
+            calories: Math.round(baseCalories * updates.servings),
+            protein_g: Math.round(baseProtein * updates.servings),
+            carbs_g: Math.round(baseCarbs * updates.servings),
+            fat_g: Math.round(baseFat * updates.servings),
+            fiber_g: Math.round(baseFiber * updates.servings),
+            sugar_g: Math.round(baseSugar * updates.servings),
+            sodium_mg: Math.round(baseSodium * updates.servings),
+        });
+
+        setEditModalVisible(false);
+        setSelectedLog(null);
     };
 
 
@@ -206,6 +238,16 @@ export default function FoodLoggingScreen() {
                     setSelectedFood(null);
                 }}
                 onConfirm={handleConfirmPortion}
+            />
+            <EditFoodLogModal
+                visible={editModalVisible}
+                log={selectedLog}
+                onClose={() => {
+                    setEditModalVisible(false);
+                    setSelectedLog(null);
+                }}
+                onSave={handleSaveLog}
+                onDelete={handleDeleteLog}
             />
         </SafeAreaView>
     );
