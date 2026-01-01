@@ -22,6 +22,7 @@ export default function FoodLoggingScreen() {
     const [portionSelectorVisible, setPortionSelectorVisible] = useState(false);
     const [selectedFood, setSelectedFood] = useState<FoodSearchResult | null>(null);
     const addLog = useFoodLogStore((state) => state.addLog);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [selectedLog, setSelectedLog] = useState<FoodLog | null>(null);
@@ -145,29 +146,39 @@ export default function FoodLoggingScreen() {
     };
 
     const handleSaveLog = async (id: string, updates: { servings: number; meal_type: MealType }) => {
+        if (isSaving) return;
+
         const originalLog = todaysLogs.find(log => log.id === id);
         if (!originalLog) return;
 
-        //
-        const baseCalories = originalLog.calories / originalLog.servings;
-        const baseProtein = originalLog.protein_g / originalLog.servings;
-        const baseCarbs = originalLog.carbs_g / originalLog.servings;
-        const baseFat = originalLog.fat_g / originalLog.servings;
-        const baseFiber = originalLog.fiber_g / originalLog.servings;
-        const baseSugar = originalLog.sugar_g / originalLog.servings;
-        const baseSodium = originalLog.sodium_mg / originalLog.servings;
+        setIsSaving(true);
 
-        await updateLog(id, {
-            servings: updates.servings,
-            meal_type: updates.meal_type,
-            calories: Math.round(baseCalories * updates.servings),
-            protein_g: Math.round(baseProtein * updates.servings),
-            carbs_g: Math.round(baseCarbs * updates.servings),
-            fat_g: Math.round(baseFat * updates.servings),
-            fiber_g: Math.round(baseFiber * updates.servings),
-            sugar_g: Math.round(baseSugar * updates.servings),
-            sodium_mg: Math.round(baseSodium * updates.servings),
-        });
+        //
+       try {
+            const baseCalories = originalLog.calories / originalLog.servings;
+            const baseProtein = originalLog.protein_g / originalLog.servings;
+            const baseCarbs = originalLog.carbs_g / originalLog.servings;
+            const baseFat = originalLog.fat_g / originalLog.servings;
+            const baseFiber = originalLog.fiber_g / originalLog.servings;
+            const baseSugar = originalLog.sugar_g / originalLog.servings;
+            const baseSodium = originalLog.sodium_mg / originalLog.servings;
+
+            await updateLog(id, {
+                servings: updates.servings,
+                meal_type: updates.meal_type,
+                calories: Math.round(baseCalories * updates.servings),
+                protein_g: Math.round(baseProtein * updates.servings),
+                carbs_g: Math.round(baseCarbs * updates.servings),
+                fat_g: Math.round(baseFat * updates.servings),
+                fiber_g: Math.round(baseFiber * updates.servings),
+                sugar_g: Math.round(baseSugar * updates.servings),
+                sodium_mg: Math.round(baseSodium * updates.servings),
+            });
+       } catch (error) {
+            console.error('Failed to update log:', error);
+       } finally {
+            setIsSaving(false);
+       }
 
         setEditModalVisible(false);
         setSelectedLog(null);
@@ -242,6 +253,7 @@ export default function FoodLoggingScreen() {
             <EditFoodLogModal
                 visible={editModalVisible}
                 log={selectedLog}
+                isSaving={isSaving}
                 onClose={() => {
                     setEditModalVisible(false);
                     setSelectedLog(null);

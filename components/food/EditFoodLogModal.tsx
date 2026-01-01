@@ -13,10 +13,11 @@ interface EditFoodLogModalProps {
     onClose: () => void;
     onSave: (id: string, updates: { servings: number; meal_type: MealType }) => void;
     onDelete: (id: string) => void;
+    isSaving: boolean;
 }
 
 
-export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: EditFoodLogModalProps) {
+export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete, isSaving }: EditFoodLogModalProps) {
     const [servings, setServings] = useState(1);
     const [mealType, setMealType] = useState<MealType>('breakfast');
 
@@ -229,8 +230,9 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
                 {/* Footer buttons */}
                 <View style={styles.footer}>
                     <TouchableOpacity
-                        style={[styles.saveButton, { backgroundColor: primaryColor }]}
+                        style={[styles.saveButton, { backgroundColor: primaryColor }, isSaving && styles.buttonDisabled]}
                         onPress={handleSave}
+                        disabled={isSaving}
                     >
                         <Text style={styles.saveButtonText}>Save Changes</Text>
                     </TouchableOpacity>
@@ -383,5 +385,8 @@ nutrientLabel: {
         color: '#ef4444',
         fontSize: 16,
         fontWeight: '600',
+    },
+    buttonDisabled: {
+        opacity: 0.6,
     },
 });
