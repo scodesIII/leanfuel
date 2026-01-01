@@ -157,7 +157,35 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete }: Ed
 
                 {/* Meal Type Section */}
                 <View style={[styles.section, { borderBottomColor: borderColor }]}>
-                    {/* Label + 4 buttons */}
+                    <Text style={[styles.sectionLabel, { color: mutedColor }]}>
+                        MEAL
+                    </Text>
+                    <View style={styles.mealButtons}>
+                        {(['breakfast', 'lunch', 'dinner', 'snack'] as MealType[]).map((meal) => {
+                            const isActive = mealType === meal;
+                            const icons = {
+                                breakfast: '🌅',
+                                lunch: '☀️',
+                                dinner: '🌙',
+                                snack: '🍎',
+                            };
+
+                            return(
+                                <TouchableOpacity
+                                    key={meal}
+                                    onPress={() => setMealType(meal)}
+                                    style={[styles.mealButton, { backgroundColor: isActive ? primaryColor : 'cardColor' }]}
+                                    >
+                                        <Text style={styles.mealButtonIcon}>
+                                            {icons[meal]}
+                                        </Text>
+                                        <Text style={[styles.mealButtonText, { color: isActive ? '#FFF' : mutedColor }]}>
+                                            {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                                        </Text>
+                                </TouchableOpacity>
+                            )
+                        })}
+                    </View> 
                 </View>
 
                 {/* Nutrients Section */}
@@ -199,8 +227,8 @@ const styles = StyleSheet.create({
         width:  32,
     },
     foodInfo: {
-    padding: 20,
-    borderBottomWidth: 1,
+        padding: 20,
+        borderBottomWidth: 1,
     },
     foodName: {
         fontSize: 20,
@@ -211,8 +239,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     section: {
-    padding: 20,
-    borderBottomWidth: 1,
+        padding: 20,
+        borderBottomWidth: 1,
     },
     sectionLabel: {
         fontSize: 12,
@@ -244,6 +272,24 @@ const styles = StyleSheet.create({
     servingUnit: {
         fontSize: 14,
         marginTop: 4,
+    },
+    mealButtons: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    mealButton: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: 'center',
+        gap: 4,
+    },
+    mealButtonIcon: {
+        fontSize: 16,
+    },
+    mealButtonText: {
+        fontSize: 11,
+        fontWeight: '500',
     },
     footer: {},
 });
