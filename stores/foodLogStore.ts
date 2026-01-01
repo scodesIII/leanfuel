@@ -464,7 +464,8 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             });
 
             // Refetch summary
-            await get().fetchTodaysSummary();
+            await get().fetchSummaryForDate(get().selectedDate);
+            await get().fetchLogsForDate(get().selectedDate);
         } catch (error) {
             console.error('Error updating log:', error);
             set({

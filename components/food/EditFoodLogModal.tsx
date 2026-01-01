@@ -72,21 +72,8 @@ export function EditFoodLogModal({ visible, log, onClose, onSave, onDelete, isSa
 
     const handleDelete = () => {
         if (log) {
-            Alert.alert(
-                'Delete Entry',
-                `Are you sure you want to delete "${log.food_item?.name}"?`,
-                [
-                    { text: 'Cancel', style: 'cancel' },
-                    { 
-                        text: 'Delete', 
-                        style: 'destructive', 
-                        onPress: () => {
-                            onDelete(log.id);
-                            onClose();
-                        }
-                    }
-                ]
-            );
+            onDelete(log.id);
+            onClose();
         }
     };
 
