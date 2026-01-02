@@ -10,6 +10,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUserStore } from '@/stores/userStore';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+
 // Ignore SafeAreaView deprecation warning from Expo Router/React Navigation dependencies
 LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 
@@ -151,23 +154,17 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-                <Stack.Screen name="index" options={{ headerTitle: "Home", gestureEnabled: false }} />
-                <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_right' }} />
-                <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
-                <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
-            </Stack>
-            <StatusBar style="auto" />
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+                  <Stack.Screen name="index" options={{ headerTitle: "Home", gestureEnabled: false }} />
+                  <Stack.Screen name="(auth)" options={{ gestureEnabled: false, animation: 'slide_from_right' }} />
+                  <Stack.Screen name="(tabs)" options={{ gestureEnabled: false }} />
+                  <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
+              </Stack>
+              <StatusBar style="auto" />
+          </ThemeProvider>
+        </ErrorBoundary>
     </GestureHandlerRootView>
-  );
-}
-
-export function ErrorBoundary(props: { error: Error }) {
-  return (
-    <Text className="text-red-500 p-4">
-      An error occurred: {props.error.message}
-    </Text>
   );
 }
