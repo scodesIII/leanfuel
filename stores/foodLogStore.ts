@@ -1,5 +1,5 @@
-import  { create } from 'zustand';
-import  { supabase} from "@/lib/superbase";
+import { create } from 'zustand';
+import { supabase } from "@/lib/superbase";
 import { MealType } from '@/types/food';
 
 // ============================================================================
@@ -172,137 +172,58 @@ interface FoodLogActions {
 // Combine state + actions into one type
 type FoodLogStore = FoodLogState & FoodLogActions;
 
-
-// ============================================================================
-// STEP 4: CREATE THE STORE (zustand)
-// ============================================================================
-
 const initialState: FoodLogState = {
     todaysLogs: [],
     todaysSummary: null,
     isLoading: false,
     error: null,
     lastFetchTime: 0,
-    selectedDate: new Date().toISOString().split('T')[0], // Today's date
+    selectedDate: new Date().toISOString().split('T')[0],
 };
 
+// Stale request guards
+let activeLogsRequestId: string | null = null;
+let activeSummaryRequestId: string | null = null;
 
 export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     ...initialState,
 
-    fetchTodaysLogs: async () => {
-        // Get current state to check if we need to refetch
-        const state = get();
-        const now = Date.now();
-        const CACHE_DURATION = 30 * 1000; // 30 seconds
+    fetchLogsForDate: async (date: string) => {
+        const requestId = `${date}-${Date.now()}`;
+        activeLogsRequestId = requestId;
 
-        // OPTIMIZATION: Skip fetch if data is fresh (caching)
-        if(
-            state.todaysLogs.length > 0 &&
-            now - state.lastFetchTime < CACHE_DURATION
-        ) {
-            console.log('Using cached data')
-            return;
-        }
-
-        // Step 1: Set loading state
         set({ isLoading: true, error: null });
 
         try {
-            // Step 2: Fetch from Supabase
-            const today = new Date().toISOString().split('T')[0];
-
             const { data, error } = await supabase
                 .from('food_logs')
                 .select(`
                     *,
-                    food_item: food_items(
+                    food_item:food_items (
                         id,
                         name,
                         brand,
                         image_url
-                        )
+                    )
                 `)
-                .eq('date_logged', today)
-                .order('consumed_at', { ascending: false });
-
-            if (error) throw  error;
-
-            // Step 3: Update state with fetched data
-            set({
-                todaysLogs: data || [],
-                lastFetchTime: now,
-                isLoading: false
-            });
-        } catch (error) {
-            console.error('Error fetching logs', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to fetch logs',
-                isLoading: false,
-            });
-        }
-    },
-
-    /**
-     * fetchTodaysSummary - Get pre-calculated daily totals
-     *
-     * Why separate from logs?
-     * - Summary is faster to fetch (1 row vs many)
-     * - Can show dashboard quickly while logs load
-     */
-    fetchTodaysSummary: async () => {
-        set({ isLoading: true, error: null });
-
-        try {
-            // Option 1: Use the helper function (recommended)
-            const { data, error } = await supabase.rpc('get_todays_nutrition');
-
-            if (error) throw error;
-
-            set({
-                todaysSummary: data && data.length > 0 ? data[0] : null,
-                isLoading: false,
-            });
-        } catch (error)
-        {
-            console.error('Error fetching summary:', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to fetch summary',
-                isLoading: false,
-            });
-        }
-    },
-
-    /**
-     * fetchLogsForDate - Get logs for any date
-     *
-     * Use case: User browses history
-     */
-    fetchLogsForDate: async (date: string) => {
-        set({ isLoading: true, error: null, selectedDate: date });
-
-        try {
-            const { data, error } = await supabase
-                .from('food_logs')
-                .select(`
-          *,
-          food_item:food_items (
-            id,
-            name,
-            brand,
-            image_url
-          )
-        `)
                 .eq('date_logged', date)
                 .order('consumed_at', { ascending: false });
 
             if (error) throw error;
 
+            // Stale guard
+            if (activeLogsRequestId !== requestId) {
+                console.log('🔍 Stale logs request ignored for:', date);
+                return;
+            }
+
             set({
                 todaysLogs: data || [],
                 isLoading: false,
             });
         } catch (error) {
+            if (activeLogsRequestId !== requestId) return;
+            
             console.error('Error fetching logs for date:', error);
             set({
                 error: error instanceof Error ? error.message : 'Failed to fetch logs',
@@ -311,12 +232,10 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         }
     },
 
-    /**
-     * fetchSummaryForDate - Get summary for any date
-     *
-     * Use case: User browses summary history
-     */
     fetchSummaryForDate: async (date: string) => {
+        const requestId = `${date}-${Date.now()}`;
+        activeSummaryRequestId = requestId;
+
         try {
             const { data: { user } } = await supabase.auth.getUser();
             
@@ -334,8 +253,16 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
+            // Stale guard
+            if (activeSummaryRequestId !== requestId) {
+                console.log('🔍 Stale summary request ignored for:', date);
+                return;
+            }
+
             set({ todaysSummary: data });
         } catch (error) {
+            if (activeSummaryRequestId !== requestId) return;
+            
             console.error('Error fetching summary for date:', error);
             set({
                 error: error instanceof Error ? error.message : 'Failed to fetch summary',
@@ -343,24 +270,19 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         }
     },
 
+    // ❌ DEPRECATED - use fetchLogsForDate instead
+    fetchTodaysLogs: async () => {
+        const today = new Date().toISOString().split('T')[0];
+        await get().fetchLogsForDate(today);
+    },
 
-
-    // ============================================================================
-    // MUTATION ACTIONS
-    // ============================================================================
-
-    /**
-     * addLog - Create a new food log
-     *
-     * Pattern for mutations:
-     * 1. Optimistic update (update UI immediately)
-     * 2. Send to database
-     * 3. On success: Update with real data
-     * 4. On error: Rollback optimistic update
-     */
+    // ❌ DEPRECATED - use fetchSummaryForDate instead
+    fetchTodaysSummary: async () => {
+        const today = new Date().toISOString().split('T')[0];
+        await get().fetchSummaryForDate(today);
+    },
 
     addLog: async (input: AddFoodLogInput) => {
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
     
         if (!user) {
@@ -369,11 +291,10 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             return null;
         }
 
-        const state = get();
+        const selectedDate = get().selectedDate;
         set({ isLoading: true, error: null });
 
         try {
-            // Prepare the data
             const logData = {
                 user_id: user.id,
                 food_item_id: input.food_item_id,
@@ -389,35 +310,39 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 sugar_g: input.sugar_g || 0,
                 sodium_mg: input.sodium_mg || 0,
                 consumed_at: input.consumed_at || new Date().toISOString(),
+                date_logged: selectedDate,
                 notes: input.notes,
             };
 
-            // Insert into database
             const { data, error } = await supabase
                 .from('food_logs')
                 .insert(logData)
                 .select(`
-          *,
-          food_item:food_items (
-            id,
-            name,
-            brand,
-            image_url
-          )
-        `)
+                    *,
+                    food_item:food_items (
+                        id,
+                        name,
+                        brand,
+                        image_url
+                    )
+                `)
                 .single();
 
             if (error) throw error;
 
-            // Update state with the new log
-            // Add to beginning of array (newest first)
-            set({
-                todaysLogs: [data, ...state.todaysLogs],
-                isLoading: false,
-            });
+            // Only add to local state if still viewing the same date
+            const currentDate = get().selectedDate;
+            if (logData.date_logged === currentDate) {
+                set({
+                    todaysLogs: [data, ...get().todaysLogs],
+                    isLoading: false,
+                });
+            } else {
+                set({ isLoading: false });
+            }
 
-            // Refetch summary (trigger auto-updated it, but let's get fresh data)
-            await get().fetchTodaysSummary();
+            // Fetch summary for the date we added to
+            await get().fetchSummaryForDate(logData.date_logged);
 
             return data;
         } catch (error) {
@@ -430,11 +355,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         }
     },
 
-    /**
-     * updateLog - Edit an existing log
-     */
     updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {
-        const state = get();
         set({ isLoading: true, error: null });
 
         try {
@@ -443,29 +364,28 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 .update(updates)
                 .eq('id', id)
                 .select(`
-          *,
-          food_item:food_items (
-            id,
-            name,
-            brand,
-            image_url
-          )
-        `)
+                    *,
+                    food_item:food_items (
+                        id,
+                        name,
+                        brand,
+                        image_url
+                    )
+                `)
                 .single();
 
             if (error) throw error;
 
             // Update the log in the array
             set({
-                todaysLogs: state.todaysLogs.map((log) =>
+                todaysLogs: get().todaysLogs.map((log) =>
                     log.id === id ? data : log
                 ),
                 isLoading: false,
             });
 
-            // Refetch summary
+            // Refetch summary for current date
             await get().fetchSummaryForDate(get().selectedDate);
-            await get().fetchLogsForDate(get().selectedDate);
         } catch (error) {
             console.error('Error updating log:', error);
             set({
@@ -474,11 +394,8 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             });
         }
     },
-    /**
-     * deleteLog - Remove a food log
-     */
+
     deleteLog: async (id: string) => {
-        const state = get();
         set({ isLoading: true, error: null });
 
         try {
@@ -491,12 +408,12 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             // Remove from state
             set({
-                todaysLogs: state.todaysLogs.filter((log) => log.id !== id),
+                todaysLogs: get().todaysLogs.filter((log) => log.id !== id),
                 isLoading: false,
             });
 
-            // Refetch summary
-            await get().fetchTodaysSummary();
+            // Refetch summary for current date
+            await get().fetchSummaryForDate(get().selectedDate);
         } catch (error) {
             console.error('Error deleting log:', error);
             set({
@@ -506,15 +423,9 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         }
     },
 
-    // ============================================================================
-    // UI ACTIONS
-    // ============================================================================
-
+    // PURE - no side effects
     setSelectedDate: (date: string) => {
         set({ selectedDate: date });
-        // Automatically fetch logs for the new date
-        get().fetchLogsForDate(date);
-        get().fetchSummaryForDate(date);
     },
 
     clearError: () => {

@@ -28,7 +28,7 @@ export default function FoodLoggingScreen() {
     const [selectedLog, setSelectedLog] = useState<FoodLog | null>(null);
 
     const { profile } = useUserStore();
-    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchTodaysSummary, fetchTodaysLogs, selectedDate, setSelectedDate, deleteLog, updateLog } = useFoodLogStore();
+    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchSummaryForDate, selectedDate, setSelectedDate, deleteLog, updateLog } = useFoodLogStore();
 
     const consumed = todaysSummary?.total_calories ?? 0;
     const goal = profile?.daily_calorie_goal ?? 2000;
@@ -86,7 +86,7 @@ export default function FoodLoggingScreen() {
 
         if (result) {
             console.log('✅ Food logged:', result.id);
-            fetchTodaysLogs();
+            
         } else {
             // TODO: Show error toast
             console.error('❌ Failed to log food');
@@ -185,15 +185,13 @@ export default function FoodLoggingScreen() {
     };
 
 
-    // Fetch logs on mount
+    // Add useEffect to fetch when date changes
     useEffect(() => {
-        fetchTodaysLogs();
+        fetchLogsForDate(selectedDate);
+        fetchSummaryForDate(selectedDate);
+    }, [selectedDate]);
 
-        const today = new Date().toISOString().split('T')[0];
-        useFoodLogStore.getState().fetchLogsForDate(today);
-        useFoodLogStore.getState().fetchSummaryForDate(today);
-
-    }, []);
+    // Remove the old useEffect that fetches on mount - the above handles it
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor }]}>
