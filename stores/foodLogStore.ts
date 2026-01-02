@@ -213,7 +213,6 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             // Stale guard
             if (activeLogsRequestId !== requestId) {
-                console.log('🔍 Stale logs request ignored for:', date);
                 return;
             }
 
@@ -255,7 +254,6 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             // Stale guard
             if (activeSummaryRequestId !== requestId) {
-                console.log('🔍 Stale summary request ignored for:', date);
                 return;
             }
 
