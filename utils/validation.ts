@@ -184,3 +184,19 @@ export function isInRange(value: number, min: number, max: number, fieldName: st
 
     return '';
 }
+
+
+/**
+ * Check if value is non-negative
+ */
+export function isNonNegative(value: number, fieldName: string): string {
+    if (typeof value !== 'number' || isNaN(value)) {
+        return `${fieldName} must be a number`;
+    }
+
+    if (value < 0) {
+        return `${fieldName} must be non-negative`;
+    }
+
+    return '';
+}
