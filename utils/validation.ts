@@ -185,7 +185,6 @@ export function isInRange(value: number, min: number, max: number, fieldName: st
     return '';
 }
 
-
 /**
  * Check if value is non-negative
  */
@@ -196,6 +195,17 @@ export function isNonNegative(value: number, fieldName: string): string {
 
     if (value < 0) {
         return `${fieldName} must be non-negative`;
+    }
+
+    return '';
+}
+
+/**
+ * Check if value is one of allowed values
+ */
+export function isOneOf<T>(value: T, allowed: T[], fieldName: string): string {
+    if (!allowed.includes(value)) {
+        return `${fieldName} must be one of ${allowed.join(', ')}`;
     }
 
     return '';
