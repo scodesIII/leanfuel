@@ -201,7 +201,7 @@ export function isNonNegative(value: number, fieldName: string): string {
 }
 
 /**
- * Check if value is one of allowed values
+ * Check if value is within a predefined set
  */
 export function isOneOf<T>(value: T, allowed: T[], fieldName: string): string {
     if (!allowed.includes(value)) {
