@@ -164,3 +164,23 @@ export function validateField(
     const validation = validateOnboardingData(tempData);
     return validation.errors[field] || '';
 }
+
+
+// ============================================================================
+// GENERIC VALIDATORS (Reusable)
+// ============================================================================
+
+/**
+ * Check if value is within a numeric range
+ */
+export function isInRange(value: number, min: number, max: number, fieldName: string): string {
+    if (typeof value !== 'number' || isNaN(value)) {
+        return `${fieldName} must be a number`;
+    }
+
+    if (value < min || value > max) {
+        return `${fieldName} must be between ${min} and ${max}`;
+    }
+
+    return '';
+}
