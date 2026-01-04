@@ -210,3 +210,25 @@ export function isOneOf<T>(value: T, allowed: T[], fieldName: string): string {
 
     return '';
 }
+
+
+// ============================================================================
+// FOOD LOG VALIDATION
+// ============================================================================
+export interface FoodLogInput {
+    food_item_id: string;
+    meal_type: string;
+    servings: number;
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+    fiber_g?: number;
+    sugar_g?: number;
+    sodium_mg?: number;
+}
+
+export interface FoodLogValidationResult {
+    isValid: boolean;
+    errors: Record<string, string>;
+}
