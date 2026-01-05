@@ -272,3 +272,26 @@ export function validateFoodLogInput(input: FoodLogInput): FoodLogValidationResu
         errors,
     };
 }
+
+
+/**
+ * Validates food log update (servings and meal type only)
+ */
+export function validateFoodLogUpdate(input: { servings: number; meal_type: string; }): FoodLogValidationResult {
+    const errors: Record<string, string> = {};
+
+    const servingsError = isInRange(input.servings, 0.25, 100, 'Servings');
+    if (servingsError) errors.servings = servingsError;
+
+    const mealTypeError = isOneOf(
+        input.meal_type,
+        ['breakfast', 'lunch', 'dinner', 'snack'],
+        'Meal type'
+    );
+    if (mealTypeError) errors.meal_type = mealTypeError;
+
+    return {
+        isValid: Object.keys(errors).length === 0,
+        errors,
+    };
+}
