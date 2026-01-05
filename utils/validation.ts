@@ -232,3 +232,43 @@ export interface FoodLogValidationResult {
     isValid: boolean;
     errors: Record<string, string>;
 }
+
+
+/**
+ * Validate food log input before saving
+ */
+export function validateFoodLogInput(input: FoodLogInput): FoodLogValidationResult {
+    const errors: Record<string, string> = {};
+
+    // Food item id
+    if(!input.food_item_id || input.food_item_id.trim() === '') {
+        errors.food_item_id = 'Food item is required';
+    }
+
+    // Meal type
+    const mealTypeError = isOneOf(input.meal_type, ['breakfast', 'lunch', 'dinner', 'snack'], 'Meal type');
+    if (mealTypeError) errors.meal_type = mealTypeError;
+
+    // Servings (0.25 to 100)
+    const servingsError = isInRange(input.servings, 0.25, 100, 'Servings');
+    if (servingsError) errors.servings = servingsError;
+
+    // Calories (0 to 10000)
+    const caloriesError = isInRange(input.calories, 0, 10000, 'Calories');
+    if (caloriesError) errors.calories = caloriesError;
+
+    // Macros (non-negative)
+    const proteinError = isNonNegative(input.protein_g, 'Protein');
+    if (proteinError) errors.protein_g = proteinError;
+
+    const carbsError = isNonNegative(input.carbs_g, 'Carbs');
+    if (carbsError) errors.carbs_g = carbsError;
+
+    const fatError = isNonNegative(input.fat_g, 'Fat');
+    if (fatError) errors.fat_g = fatError;
+
+    return {
+        isValid: Object.keys(errors).length === 0,
+        errors,
+    };
+}
