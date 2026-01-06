@@ -317,3 +317,23 @@ export function normalizeSearchQuery(input: unknown): string {
         .replace(/\s+/g, ' ')   // Collapse multiple spaces to single
         .slice(0, 100);         // Reasonable length limit
 }
+
+/**
+ * Validate a normalized search query
+ * 
+ * Call normalizeSearchQuery first, then validate the result.
+ */
+export function validateSearchQuery(query: string): { 
+    isValid: boolean; 
+    error?: string;
+} {
+    if (query.length < 2) {
+        return { isValid: false, error: 'Search must be at least 2 characters' };
+    }
+
+    if (query.length > 100) {
+        return { isValid: false, error: 'Search query is too long' };
+    }
+
+    return { isValid: true };
+}
