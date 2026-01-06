@@ -54,8 +54,8 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
     // ============================================================================
     // AGE VALIDATION
     // ============================================================================
-    const age = parseInt(data.age);
-    if (!data.age || isNaN(age)) {
+    const age = Number(data.age);
+    if (!data.age || !Number.isInteger(age)) {
         errors.age = 'Age is required';
     } else if (age < 13) {
         errors.age = 'You must be at least 13 years old';
@@ -73,8 +73,8 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
     // ============================================================================
     // WEIGHT VALIDATION
     // ============================================================================
-    const weight = parseFloat(data.weight);
-    if (!data.weight || isNaN(weight)) {
+    const weight = Number(data.weight);
+    if (!data.weight || !Number.isInteger(weight)) {
         errors.weight = 'Weight is required';
     } else if (weight < 20) {
         errors.weight = 'Weight must be at least 20 kg';
@@ -85,8 +85,8 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
     // ============================================================================
     // HEIGHT VALIDATION
     // ============================================================================
-    const height = parseFloat(data.height);
-    if (!data.height || isNaN(height)) {
+    const height = Number(data.height);
+    if (!data.height || !Number.isInteger(height)) {
         errors.height = 'Height is required';
     } else if (height < 50) {
         errors.height = 'Height must be at least 50 cm';
@@ -97,8 +97,8 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
     // ============================================================================
     // TARGET WEIGHT VALIDATION
     // ============================================================================
-    const targetWeight = parseFloat(data.targetWeight);
-    if (!data.targetWeight || isNaN(targetWeight)) {
+    const targetWeight = Number(data.targetWeight);
+    if (!data.targetWeight || !Number.isInteger(targetWeight)) {
         errors.targetWeight = 'Target weight is required';
     } else if (targetWeight < 20) {
         errors.targetWeight = 'Target weight must be at least 20 kg';
