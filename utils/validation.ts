@@ -12,7 +12,7 @@ import { OnboardingData } from '@/types/onboarding';
  */
 export interface ValidationResult {
     isValid: boolean;
-    errors: Record<string, string>;
+    errors: Partial<Record<keyof OnboardingData, string>>;
 }
 
 /**
@@ -34,7 +34,7 @@ export interface ValidationResult {
  * }
  */
 export function validateOnboardingData(data: OnboardingData): ValidationResult {
-    const errors: Record<string, string> = {};
+    const errors: Partial<Record<keyof OnboardingData, string>> = {};
 
     // ============================================================================
     // GOAL VALIDATION
