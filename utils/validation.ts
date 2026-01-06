@@ -295,3 +295,25 @@ export function validateFoodLogUpdate(input: { servings: number; meal_type: stri
         errors,
     };
 }
+
+
+// ============================================================================
+// SEARCH QUERY HANDLING
+// ============================================================================
+
+/**
+ * Normalize a search query for consistency (NOT security)
+ * 
+ * Security is handled by:
+ * - React (escapes output, prevents XSS)
+ * - Supabase (parameterized queries, prevents SQL injection)
+ */
+export function normalizeSearchQuery(input: unknown): string {
+    if (typeof input !== 'string') return '';
+
+    return input
+        .normalize('NFKC')      // Unicode normalization (handles é vs e + ´)
+        .trim()                 // Remove leading/trailing whitespace
+        .replace(/\s+/g, ' ')   // Collapse multiple spaces to single
+        .slice(0, 100);         // Reasonable length limit
+}
