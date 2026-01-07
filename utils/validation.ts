@@ -193,6 +193,29 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         return '';
     },
 
+    targetWeight: (value, allData) => {
+        const targetWeight = Number(value);
+        if (!value || !Number.isFinite(targetWeight)) {
+            return 'Target weight must be a number';
+        }
+        if (targetWeight < 20) return 'Target weight must be at least 20 kg';
+        if (targetWeight > 500) return 'Target weight must be less than 500 kg';
+        
+        // Cross-field validation
+        if (allData?.goal && allData?.weight) {
+            const currentWeight = Number(allData.weight);
+            if (Number.isFinite(currentWeight)) {
+                if (allData.goal === 'lose' && targetWeight >= currentWeight) {
+                    return 'Target weight should be less than current weight for weight loss';
+                }
+                if (allData.goal === 'gain' && targetWeight <= currentWeight) {
+                    return 'Target weight should be more than current weight for weight gain';
+                }
+            }
+        }
+        return '';
+    },
+
 }
 
 
