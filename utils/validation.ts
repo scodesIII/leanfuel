@@ -155,6 +155,16 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         }
         return '';
     },
+
+    age: (value) => {
+        const age = Number(value);
+        if (!value || !Number.isInteger(age)) {
+            return 'Age must be a whole number';
+        }
+        if (age < 13) return 'You must be at least 13 years old';
+        if (age > 120) return 'Please enter a valid age';
+        return '';
+    },
 }
 
 
