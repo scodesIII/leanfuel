@@ -223,10 +223,20 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         }
         return '';
     },
+};
 
+/**
+ * Validates a single field efficiently
+ */
+export function validateField(
+    field: keyof OnboardingData,
+    value: string,
+    allData?: Partial<OnboardingData>
+): string {
+    const validator = fieldValidators[field];
+    if (!validator) return '';
+    return validator(value, allData);
 }
-
-
 
 
 // ============================================================================
