@@ -411,35 +411,28 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     addLog: async (input: AddFoodLogInput) => {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { selectedDate } = get();
     
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            console.error('No authenticated user');
-            set({ error: 'Not authenticated', isLoading: false });
+            set(state => ({
+                days: {
+                    ...state.days,
+                    [selectedDate]: {
+                        ...state.days[selectedDate],
+                        error: 'Not authenticated',
+                    },
+                },
+            }));
             return null;
         }
-
-        const selectedDate = get().selectedDate;
-        set({ isLoading: true, error: null });
 
         try {
             const logData = {
                 user_id: user.id,
-                food_item_id: input.food_item_id,
-                meal_type: input.meal_type,
-                servings: input.servings,
-                serving_size_override: input.serving_size_override,
-                serving_unit_override: input.serving_unit_override,
-                calories: input.calories,
-                protein_g: input.protein_g,
-                carbs_g: input.carbs_g,
-                fat_g: input.fat_g,
-                fiber_g: input.fiber_g || 0,
-                sugar_g: input.sugar_g || 0,
-                sodium_mg: input.sodium_mg || 0,
-                consumed_at: input.consumed_at || new Date().toISOString(),
                 date_logged: selectedDate,
-                notes: input.notes,
+                consumed_at: input.consumed_at ?? new Date().toISOString(),
+                ...input,
             };
 
             const { data, error } = await supabase
@@ -458,27 +451,29 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            // Only add to local state if still viewing the same date
-            const currentDate = get().selectedDate;
-            if (logData.date_logged === currentDate) {
-                set({
-                    todaysLogs: [data, ...get().todaysLogs],
-                    isLoading: false,
-                });
-            } else {
-                set({ isLoading: false });
-            }
+            // 🔥 Invalidate cache for that date
+            set(state => ({
+                days: invalidateDate(state.days, selectedDate),
+            }));
 
-            // Fetch summary for the date we added to
-            await get().fetchSummaryForDate(logData.date_logged);
+            // 🔄 Refetch
+            await get().fetchLogsForDate(selectedDate);
+            await get().fetchSummaryForDate(selectedDate);
 
             return data;
-        } catch (error) {
-            console.error('Error adding log:', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to add log',
-                isLoading: false,
-            });
+        } catch (err) {
+            set(state => ({
+                days: {
+                    ...state.days,
+                    [selectedDate]: {
+                        ...state.days[selectedDate],
+                        error:
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to add log',
+                    },
+                },
+            }));
             return null;
         }
     },
