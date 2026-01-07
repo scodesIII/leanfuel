@@ -165,6 +165,13 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         if (age > 120) return 'Please enter a valid age';
         return '';
     },
+
+    gender: (value) => {
+        if (!value || !['male', 'female', 'other'].includes(value)) {
+            return 'Please select a valid gender';
+        }
+        return '';
+    },
 }
 
 
