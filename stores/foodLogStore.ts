@@ -512,7 +512,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     deleteLog: async (id: string) => {
-        set({ isLoading: true, error: null });
+        const { selectedDate } = get();
 
         try {
             const { error } = await supabase
@@ -522,22 +522,28 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            // Remove from state
-            set({
-                todaysLogs: get().todaysLogs.filter((log) => log.id !== id),
-                isLoading: false,
-            });
+            set(state => ({
+                days: invalidateDate(state.days, selectedDate),
+            }));
 
-            // Refetch summary for current date
-            await get().fetchSummaryForDate(get().selectedDate);
-        } catch (error) {
-            console.error('Error deleting log:', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to delete log',
-                isLoading: false,
-            });
+            await get().fetchLogsForDate(selectedDate);
+            await get().fetchSummaryForDate(selectedDate);
+        } catch (err) {
+            set(state => ({
+                days: {
+                    ...state.days,
+                    [selectedDate]: {
+                        ...state.days[selectedDate],
+                        error:
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to delete log',
+                    },
+                },
+            }));
         }
     },
+
 
     // PURE - no side effects
     setSelectedDate: (date: string) => {
