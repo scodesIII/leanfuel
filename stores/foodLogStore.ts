@@ -479,42 +479,35 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {
-        set({ isLoading: true, error: null });
+        const { selectedDate } = get();
 
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('food_logs')
                 .update(updates)
-                .eq('id', id)
-                .select(`
-                    *,
-                    food_item:food_items (
-                        id,
-                        name,
-                        brand,
-                        image_url
-                    )
-                `)
-                .single();
+                .eq('id', id);
 
             if (error) throw error;
 
-            // Update the log in the array
-            set({
-                todaysLogs: get().todaysLogs.map((log) =>
-                    log.id === id ? data : log
-                ),
-                isLoading: false,
-            });
+            set(state => ({
+                days: invalidateDate(state.days, selectedDate),
+            }));
 
-            // Refetch summary for current date
-            await get().fetchSummaryForDate(get().selectedDate);
-        } catch (error) {
-            console.error('Error updating log:', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to update log',
-                isLoading: false,
-            });
+            await get().fetchLogsForDate(selectedDate);
+            await get().fetchSummaryForDate(selectedDate);
+        } catch (err) {
+            set(state => ({
+                days: {
+                    ...state.days,
+                    [selectedDate]: {
+                        ...state.days[selectedDate],
+                        error:
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to update log',
+                    },
+                },
+            }));
         }
     },
 
