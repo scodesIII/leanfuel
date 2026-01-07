@@ -132,38 +132,14 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
     };
 }
 
-/**
- * Validates a single field
- * 
- * Useful for real-time validation during input
- * 
- * @param field - The field name to validate
- * @param value - The field value
- * @param allData - All onboarding data (for cross-field validation)
- * @returns Error message if invalid, empty string if valid
- */
-export function validateField(
-    field: keyof OnboardingData,
-    value: any,
-    allData?: Partial<OnboardingData>
-): string {
-    const tempData: OnboardingData = {
-        goal: '',
-        activityLevel: '',
-        age: '',
-        gender: '',
-        weight: '',
-        height: '',
-        targetWeight: '',
-        timeframe: '',
-        dietaryPreferences: [],
-        ...allData,
-        [field]: value
-    } as OnboardingData;
 
-    const validation = validateOnboardingData(tempData);
-    return validation.errors[field] || '';
-}
+
+// ============================================================================
+// INDIVIDUAL FIELD VALIDATORS
+// ============================================================================
+type FieldValidator =  (value: string, allData?: Partial<OnboardingData>) => string;
+
+
 
 
 // ============================================================================
