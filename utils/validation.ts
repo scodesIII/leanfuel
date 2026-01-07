@@ -147,6 +147,14 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
 
         return '';
     },
+
+    activityLevel: (value) => {
+        const valid = ['sedentary', 'light', 'moderate', 'very', 'extra'];
+        if (!value || !valid.includes(value)) {
+            return 'Please select a valid activity level';
+        }
+        return '';
+    },
 }
 
 
