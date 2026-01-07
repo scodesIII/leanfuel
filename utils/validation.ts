@@ -139,6 +139,16 @@ export function validateOnboardingData(data: OnboardingData): ValidationResult {
 // ============================================================================
 type FieldValidator =  (value: string, allData?: Partial<OnboardingData>) => string;
 
+const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
+    goal: (value) => {
+        if (!value || !['lose', 'gain', 'maintain'].includes(value)) {
+            return 'Please select a valid goal';
+        }
+
+        return '';
+    },
+}
+
 
 
 
