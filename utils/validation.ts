@@ -172,6 +172,17 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         }
         return '';
     },
+
+    weight: (value) => {
+        const weight = Number(value);
+        if (!value || !Number.isFinite(weight)) {
+            return 'Weight must be a number';
+        }
+        if (weight < 20) return 'Weight must be at least 20 kg';
+        if (weight > 500) return 'Weight must be less than 500 kg';
+        return '';
+    },
+
 }
 
 
