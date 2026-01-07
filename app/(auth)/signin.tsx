@@ -85,11 +85,6 @@ export default function SignIn() {
       setError('Please enter a valid email address');
       return;
     }
-    // Password strength validation (optional but recommended)
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
 
     setLoading(true);
     setError(''); // Clear previous errors
