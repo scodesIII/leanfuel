@@ -322,16 +322,38 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     fetchSummaryForDate: async (date: string) => {
-        const requestId = `${date}-${Date.now()}`;
+        const { days } = get();
+        const cachedDay = days[date];
+
+        // 1️⃣ Serve cache if valid
+        if (cachedDay && isCacheValid(cachedDay)) {
+            return;
+        }
+
+        // 2️⃣ Prevent duplicate fetches
+        if (cachedDay?.isFetching) {
+            return;
+        }
+
+        const requestId = `${date}-summary-${Date.now()}`;
         activeSummaryRequestId = requestId;
+
+        set(state => ({
+            days: {
+                ...state.days,
+                [date]: {
+                    logs: cachedDay?.logs ?? [],
+                    summary: cachedDay?.summary ?? null,
+                    fetchedAt: cachedDay?.fetchedAt ?? 0,
+                    isFetching: true,
+                    error: null,
+                },
+            },
+        }));
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) {
-                set({ error: 'Not authenticated' });
-                return;
-            }
+            if (!user) throw new Error('Not authenticated');
 
             const { data, error } = await supabase
                 .from('daily_nutrition_summary')
@@ -341,20 +363,38 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 .maybeSingle();
 
             if (error) throw error;
-
-            // Stale guard
-            if (activeSummaryRequestId !== requestId) {
-                return;
-            }
-
-            set({ todaysSummary: data });
-        } catch (error) {
             if (activeSummaryRequestId !== requestId) return;
-            
-            console.error('Error fetching summary for date:', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to fetch summary',
-            });
+
+            set(state => ({
+                days: {
+                    ...state.days,
+                    [date]: {
+                        logs: state.days[date]?.logs ?? [],
+                        summary: data ?? null,
+                        fetchedAt: now(),
+                        isFetching: false,
+                        error: null,
+                    },
+                },
+            }));
+        } catch (err) {
+            if (activeSummaryRequestId !== requestId) return;
+
+            set(state => ({
+                days: {
+                    ...state.days,
+                    [date]: {
+                        logs: state.days[date]?.logs ?? [],
+                        summary: null,
+                        fetchedAt: 0,
+                        isFetching: false,
+                        error:
+                            err instanceof Error
+                                ? err.message
+                                : 'Failed to fetch summary',
+                    },
+                },
+            }));
         }
     },
 
