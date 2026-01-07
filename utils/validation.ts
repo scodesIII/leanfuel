@@ -183,6 +183,16 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         return '';
     },
 
+    height: (value) => {
+        const height = Number(value);
+        if (!value || !Number.isFinite(height)) {
+            return 'Height must be a number';
+        }
+        if (height < 50) return 'Height must be at least 50 cm';
+        if (height > 300) return 'Height must be less than 300 cm';
+        return '';
+    },
+
 }
 
 
