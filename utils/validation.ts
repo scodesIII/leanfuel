@@ -216,6 +216,14 @@ const fieldValidators: Partial<Record<keyof OnboardingData, FieldValidator>> = {
         return '';
     },
 
+    timeframe: (value) => {
+        const valid = ['3months', '6months', '12months', 'flexible'];
+        if (!value || !valid.includes(value)) {
+            return 'Please select a valid timeframe';
+        }
+        return '';
+    },
+
 }
 
 
