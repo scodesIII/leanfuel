@@ -1,11 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { router, Link } from 'expo-router';
 import { supabase } from '@/lib/superbase';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Crypto from 'expo-crypto';
 
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,43 +43,32 @@ export default function SignUp() {
     };
   };
 
-  // Input sanitization - minimal but effective
-  const sanitizeInput = (input: string) => {
-    return input.trim().replace(/[<>]/g, ''); // Remove basic XSS vectors
-  };
 
   const handleSignUp = async () => {
     // Clear previous errors
     setError('');
 
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      setError('All fields are required');
-      return;
-    }
+    // Normalize email only (lowercase + trim)
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!validateEmail(email)) {
+    // NEVER modify passwords
+    const passwordRaw = password;
+    const confirmPasswordRaw = confirmPassword
+
+    if (!validateEmail(normalizedEmail)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    const sanitizedEmail = sanitizeInput(email).toLowerCase();
-    const sanitizedPassword = sanitizeInput(password);
-
-    // Email validation
-    if (!validateEmail(sanitizedEmail)) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    // Password validation for better UX
-    const passwordCheck = validatePassword(sanitizedPassword);
+    // Password validation
+    const passwordCheck = validatePassword(passwordRaw);
     if (!passwordCheck.isValid) {
       setError(passwordCheck.errors[0]);
       return;
     }
 
-    // Password confirmation
-    if (sanitizedPassword !== sanitizeInput(confirmPassword)) {
+    // Password confirmation (compare raw values)
+    if (passwordRaw !== confirmPasswordRaw) {
       setError('Passwords do not match');
       return;
     }
@@ -94,8 +81,8 @@ export default function SignUp() {
 
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: sanitizedEmail,
-        password: sanitizedPassword,
+        email: normalizedEmail,
+        password: passwordRaw,
         options: {
           // Optional: Add metadata
           data: {
