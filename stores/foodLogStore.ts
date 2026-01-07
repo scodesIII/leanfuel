@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { supabase } from "@/lib/superbase";
 import { MealType } from '@/types/food';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 
 // ============================================================================
 // STEP 1: DEFINE TYPES (What data structures do we need)
@@ -125,27 +127,38 @@ export interface AddFoodLogInput {
 // STEP 2: DEFINE STATE SHAPE (What data lives in the store?)
 // ============================================================================
 
+type DateKey = string; // YYYY-MM-DD
+
+interface CachedDay {
+    logs: FoodLog[];
+    summary: DailyNutritionSummary | null;
+    fetchedAt: number;        // timestamp (ms)
+    isFetching: boolean;      // per-date fetch guard
+    error: string | null;     // per-date error
+}
+
+
 /**
  * State is like the "memory" of your app
  * Ask yourself: What data needs to be accessible across multiple screens?
  */
 
 interface FoodLogState {
-    // DATA STATE
-    // ----------
-    todaysLogs: FoodLog[]; // All food logs for today
-    todaysSummary: DailyNutritionSummary | null; // Pre-calculated totals
+    // NEW CACHE STRUCTURE
+    // ------------------
+    selectedDate: DateKey;
+    days: Record<DateKey, CachedDay>;
 
-    // UI STATE
-    // --------
-    isLoading: boolean; // Show loading spinners
-    error: string | null; // Show error messages
+    // BACKWARD COMPATIBILITY (temporary)
+    // ---------------------------------
+    todaysLogs: FoodLog[];
+    todaysSummary: DailyNutritionSummary | null;
 
-    // CACHE STATE (Optional but useful)
-    // -----------
-    lastFetchTime: number; // When did we last fetch? (for caching)
-    selectedDate: string; // Which date are we viewing? (defaults to today)
+    // GLOBAL UI STATE (temporary)
+    isLoading: boolean;
+    error: string | null;
 }
+
 
 
 interface FoodLogActions {
@@ -173,13 +186,40 @@ interface FoodLogActions {
 type FoodLogStore = FoodLogState & FoodLogActions;
 
 const initialState: FoodLogState = {
+    selectedDate: new Date().toISOString().split('T')[0],
+    days: {},
+
+    // Backward compatibility
     todaysLogs: [],
     todaysSummary: null,
     isLoading: false,
     error: null,
-    lastFetchTime: 0,
-    selectedDate: new Date().toISOString().split('T')[0],
 };
+
+
+const now = () => Date.now();
+
+function getCachedDay(
+    days: Record<string, CachedDay>,
+    date: string
+): CachedDay | undefined {
+    return days[date];
+}
+
+function isCacheValid(day: CachedDay | undefined): boolean {
+    if (!day) return false;
+    return now() - day.fetchedAt < CACHE_TTL;
+}
+
+function invalidateDate(
+    days: Record<string, CachedDay>,
+    date: string
+): Record<string, CachedDay> {
+    const copy = { ...days };
+    delete copy[date];
+    return copy;
+}
+
 
 // Stale request guards
 let activeLogsRequestId: string | null = null;
@@ -189,46 +229,96 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     ...initialState,
 
     fetchLogsForDate: async (date: string) => {
+        const { days } = get();
+        const cachedDay = getCachedDay(days, date);
+
+        // 1️⃣ Serve cache if valid
+        if (isCacheValid(cachedDay)) {
+            set({
+                todaysLogs: cachedDay?.logs || [],
+                isLoading: false,
+            });
+            return;
+        }
+
+        // 2️⃣ Prevent duplicate fetches for same date
+        if (cachedDay?.isFetching) {
+            return;
+        }
+
         const requestId = `${date}-${Date.now()}`;
         activeLogsRequestId = requestId;
 
-        set({ isLoading: true, error: null });
+        // 3️⃣ Mark date as fetching
+        set(state => ({
+            isLoading: true,
+            error: null,
+            days: {
+                ...state.days,
+                [date]: {
+                    logs: cachedDay?.logs ?? [],
+                    summary: cachedDay?.summary ?? null,
+                    fetchedAt: cachedDay?.fetchedAt ?? 0,
+                    isFetching: true,
+                    error: null,
+                },
+            },
+        }));
 
         try {
             const { data, error } = await supabase
                 .from('food_logs')
                 .select(`
-                    *,
-                    food_item:food_items (
-                        id,
-                        name,
-                        brand,
-                        image_url
-                    )
-                `)
-                .eq('date_logged', date)
-                .order('consumed_at', { ascending: false });
+                *,
+                food_item:food_items (
+                    id,
+                    name,
+                    brand,
+                    image_url
+                )
+            `)
+            .eq('date_logged', date)
+            .order('consumed_at', { ascending: false });
 
             if (error) throw error;
 
-            // Stale guard
-            if (activeLogsRequestId !== requestId) {
-                return;
-            }
-
-            set({
-                todaysLogs: data || [],
-                isLoading: false,
-            });
-        } catch (error) {
+            // 4️⃣ Stale request guard
             if (activeLogsRequestId !== requestId) return;
-            
-            console.error('Error fetching logs for date:', error);
-            set({
-                error: error instanceof Error ? error.message : 'Failed to fetch logs',
+
+            set(state => ({
                 isLoading: false,
-            });
-        }
+                todaysLogs: data || [],
+                days: {
+                    ...state.days,
+                    [date]: {
+                        logs: data || [],
+                        summary: state.days[date]?.summary ?? null,
+                        fetchedAt: now(),
+                        isFetching: false,
+                        error: null,
+                    },
+                },
+            }));
+        } catch (err) {
+            if (activeLogsRequestId !== requestId) return;
+
+            const message = err instanceof Error ? err.message : 'Failed to fetch logs';
+
+            set(state => ({
+                isLoading: false,
+                error: message,
+                days: {
+                    ...state.days,
+                    [date]: {
+                        logs: state.days[date]?.logs ?? [],
+                        summary: state.days[date]?.summary ?? null,
+                        fetchedAt: 0,
+                        isFetching: false,
+                        error: message,
+                    },
+                },
+            }));
+        }   
     },
 
     fetchSummaryForDate: async (date: string) => {
