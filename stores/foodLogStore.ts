@@ -494,32 +494,52 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {
-        const { selectedDate } = get();
-
         try {
-            const { error } = await supabase
-                .from('food_logs')
-                .update(updates)
-                .eq('id', id);
+            const { data: existing, error: fetchError } = await supabase
+            .from('food_logs')
+            .select('id, date_logged')
+            .eq('id', id)
+            .single();
+
+            if (fetchError) throw fetchError;
+
+            const oldDate = existing.date_logged;
+
+            const { data, error } = await supabase
+            .from('food_logs')
+            .update(updates)
+            .eq('id', id)
+            .select('date_logged')
+            .single();
 
             if (error) throw error;
 
+            const newDate = data.date_logged;
 
-            await get().fetchLogsForDate(selectedDate);
-            await get().fetchSummaryForDate(selectedDate);
+            // 🔥 Invalidate both dates if changed
+            set(state => {
+                let days = state.days;
+                days = invalidateDay(days, oldDate);
+                if (newDate !== oldDate) {
+                    days = invalidateDay(days, newDate);
+                }
+                return { days };
+            });
+
+            // 🔄 Refetch affected days
+            await Promise.all([
+                get().fetchLogsForDate(oldDate),
+                get().fetchSummaryForDate(oldDate),
+                newDate !== oldDate
+                    ? get().fetchLogsForDate(newDate)
+                    : Promise.resolve(),
+                newDate !== oldDate
+                    ? get().fetchSummaryForDate(newDate)
+                    : Promise.resolve(),
+            ]);
+
         } catch (err) {
-            set(state => ({
-                days: {
-                    ...state.days,
-                    [selectedDate]: {
-                        ...state.days[selectedDate],
-                        error:
-                            err instanceof Error
-                                ? err.message
-                                : 'Failed to update log',
-                    },
-                },
-            }));
+            console.error('Failed to update log:', err);
         }
     },
 
