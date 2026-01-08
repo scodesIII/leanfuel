@@ -191,22 +191,16 @@ function isSummaryCacheValid(day: CachedDay | undefined): boolean {
     return now() - day.summaryFetchedAt < CACHE_TTL;
 }
 
-function invalidateDate(
+const invalidateDay = (
     days: Record<string, CachedDay>,
     date: string
-): Record<string, CachedDay> {
-    const day = days[date];
-    if (!day) return days;
-    
-    return {
-        ...days,
-        [date]: {
-            ...day,
-            logsFetchedAt: 0,  // Mark stale, keep data visible\
-            summaryFetchedAt: 0,
-        },
-    };
-}
+) => ({
+    ...days,
+    [date]: {
+        ...createEmptyDay(),
+    },
+});
+
     
 
 
