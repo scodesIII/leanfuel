@@ -544,31 +544,36 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     deleteLog: async (id: string) => {
-        const { selectedDate } = get();
-
         try {
+            const { data: existing, error: fetchError } = await supabase
+            .from('food_logs')
+            .select('id, date_logged')
+            .eq('id', id)
+            .single();
+
+            if (fetchError) throw fetchError;
+
+            const oldDate = existing.date_logged;
+
             const { error } = await supabase
-                .from('food_logs')
-                .delete()
-                .eq('id', id);
+            .from('food_logs')
+            .delete()
+            .eq('id', id);
 
             if (error) throw error;
 
-            await get().fetchLogsForDate(selectedDate);
-            await get().fetchSummaryForDate(selectedDate);
-        } catch (err) {
+            // 🔥 Invalidate cache for that date
             set(state => ({
-                days: {
-                    ...state.days,
-                    [selectedDate]: {
-                        ...state.days[selectedDate],
-                        error:
-                            err instanceof Error
-                                ? err.message
-                                : 'Failed to delete log',
-                    },
-                },
+                days: invalidateDay(state.days, oldDate),
             }));
+
+            // Refetch fresh data
+            await Promise.all([
+                get().fetchLogsForDate(oldDate),
+                get().fetchSummaryForDate(oldDate),
+            ]);
+        } catch (err) {
+           console.error('Failed to delete log:', err);
         }
     },
 
