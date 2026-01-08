@@ -15,7 +15,6 @@ interface DailySummaryMiniProps {
 export function DailySummaryMini({ consumed, goal, remaining }: DailySummaryMiniProps) {
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
-    const cardColor = useThemeColor({}, 'card');
 
     const actualProgress = goal > 0 ? (consumed / goal) * 100 : 0; // Uncapped for logic
     const progress = Math.min(actualProgress, 100); // Capped for display
