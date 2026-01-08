@@ -423,15 +423,18 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            set(state => ({
-                days: {
-                    ...state.days,
-                    [selectedDate]: {
-                        ...state.days[selectedDate],
-                        error: 'Not authenticated',
+            set(state => {
+                const days = ensureDay(state.days, selectedDate);
+                return {
+                    days: {
+                        ...days,
+                        [selectedDate]: {
+                            ...days[selectedDate],
+                            error: 'Not authenticated',
+                        },
                     },
-                },
-            }));
+                };
+            });
             return null;
         }
 
@@ -458,26 +461,34 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            
+            // 🔥 Invalidate cache for affected date
+            set(state => ({
+                days: invalidateDay(state.days, selectedDate),
+            }));
 
-            // 🔄 Refetch
-            await get().fetchLogsForDate(selectedDate);
-            await get().fetchSummaryForDate(selectedDate);
+            // Refetch fresh data
+            await Promise.all([
+                get().fetchLogsForDate(selectedDate),
+                get().fetchSummaryForDate(selectedDate),
+            ]);
 
             return data;
         } catch (err) {
-            set(state => ({
-                days: {
-                    ...state.days,
-                    [selectedDate]: {
-                        ...state.days[selectedDate],
-                        error:
-                            err instanceof Error
-                                ? err.message
-                                : 'Failed to add log',
+            set(state => {
+                const days = ensureDay(state.days, selectedDate);
+                return {
+                    days: {
+                        ...days,
+                        [selectedDate]: {
+                            ...days[selectedDate],
+                            error:
+                                err instanceof Error
+                                    ? err.message
+                                    : 'Failed to add log',
+                        },
                     },
-                },
-            }));
+                };
+            });
             return null;
         }
     },
