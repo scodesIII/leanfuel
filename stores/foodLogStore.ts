@@ -144,8 +144,6 @@ interface FoodLogState {
 }
 
 
-
-
 interface FoodLogActions {
     // RETRIEVAL ACTIONS (Read from database)
     // ----------------
@@ -217,13 +215,30 @@ function invalidateDate(
 const activeLogRequests = new Map<string, string>();
 const activeSummaryRequests = new Map<string, string>();
 
+const createEmptyDay = (): CachedDay => ({
+    logs: [],
+    summary: null,
+    logsFetchedAt: 0,
+    summaryFetchedAt: 0,
+    isFetchingLogs: false,
+    isFetchingSummary: false,
+    error: null,
+});
+
+const ensureDay = (days: Record<string, CachedDay>, date: string) => {
+    if (days[date]) return days;
+    return { ...days, [date]: createEmptyDay() };
+};
+
 
 export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     ...initialState,
 
     fetchLogsForDate: async (date: string) => {
         const { days } = get();
-        const cachedDay = getCachedDay(days, date);
+
+        const daysWithEntry = ensureDay(days, date);
+        const cachedDay = daysWithEntry[date];
 
         const requestId = `${date}-${Date.now()}`;
         activeLogRequests.set(date, requestId);
@@ -238,23 +253,21 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             return;
         }
 
-        // 3️⃣ Mark date as fetching
-        set(state => ({
-            // isLoading: true,
-            // error: null,
-            days: {
-                ...state.days,
-                [date]: {
-                    logs: cachedDay?.logs ?? [],
-                    summary: cachedDay?.summary ?? null,
-                    logsFetchedAt: cachedDay?.logsFetchedAt ?? 0,
-                    summaryFetchedAt: cachedDay?.summaryFetchedAt ?? 0,
-                    isFetchingLogs: true,
-                    isFetchingSummary: cachedDay?.isFetchingSummary ?? false,
-                    error: null,
+        // 3️⃣ Mark date as fetching. (SAFE)
+        set(state => {
+            const days = ensureDay(state.days, date);
+
+            return {
+                days: {
+                    ...days,
+                    [date]: {
+                        ...days[date],
+                        isFetchingLogs: true,
+                        error: null,
+                    },
                 },
-            },
-        }));
+            };
+        });
 
         try {
             const { data, error } = await supabase
@@ -278,47 +291,45 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 return;
             }
 
-            set(state => ({
-                // isLoading: false,
-                // todaysLogs: data || [],
-                days: {
-                    ...state.days,
-                    [date]: {
-                        logs: data || [],
-                        summary: state.days[date]?.summary ?? null,
-                        logsFetchedAt: now(),
-                        summaryFetchedAt: state.days[date]?.summaryFetchedAt ?? 0,
-                        isFetchingLogs: false,
-                        isFetchingSummary: state.days[date]?.isFetchingSummary ?? false,
-                        error: null,
+            set(state => {
+                const days = ensureDay(state.days, date);
+
+                return {
+                    days: {
+                        ...days,
+                        [date]: {
+                            ...days[date],
+                            logs: data ?? [],
+                            logsFetchedAt: now(),
+                            isFetchingLogs: false,
+                            error: null,
+                        },
                     },
-                },
-            }));
+                };
+            });
         } catch (err) {
             if (activeLogRequests.get(date) !== requestId) return;
 
             const message = err instanceof Error ? err.message : 'Failed to fetch logs';
 
-            set(state => ({
-                isLoading: false,
-                error: message,
-                days: {
-                    ...state.days,
-                    [date]: {
-                        logs: state.days[date]?.logs ?? [],
-                        summary: state.days[date]?.summary ?? null,
-                        logsFetchedAt: 0,
-                        summaryFetchedAt: 0,
-                        isFetchingLogs: false,
-                        isFetchingSummary: state.days[date]?.isFetchingSummary ?? false,
-                        error: message,
+            set(state => {
+                const days = ensureDay(state.days, date);
+
+                return {
+                    days: {
+                        ...days,
+                        [date]: {
+                            ...days[date],
+                            isFetchingLogs: false,
+                            error: message,
+                        },
                     },
-                },
-            }));
+                };
+            });
         } finally {
-            // only delete if THIS request is still the active one
-            if (activeSummaryRequests.get(date) === requestId) {
-                activeSummaryRequests.delete(date);
+            // Always cleanup this request
+            if (activeLogRequests.get(date) === requestId) {
+                activeLogRequests.delete(date);
             }
         }
 
