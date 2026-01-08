@@ -28,19 +28,25 @@ export default function FoodLoggingScreen() {
     const [selectedLog, setSelectedLog] = useState<FoodLog | null>(null);
 
     const { profile } = useUserStore();
-    const { todaysLogs, todaysSummary, fetchLogsForDate, fetchSummaryForDate, selectedDate, setSelectedDate, deleteLog, updateLog } = useFoodLogStore();
+    const { fetchLogsForDate, fetchSummaryForDate, setSelectedDate, deleteLog, updateLog } = useFoodLogStore();
 
-    const consumed = todaysSummary?.total_calories ?? 0;
+    const { selectedDate, days } = useFoodLogStore();
+
+    const day = days[selectedDate];
+
+    const logs = day?.logs ?? [];
+    const summary = day?.summary ?? null;
+    const isLoadingLogs = day?.isFetchingLogs ?? false;
+    const isLoadingSummary = day?.isFetchingSummary ?? false;
+    const error = day?.error ?? null;
+
+    const consumed = summary?.total_calories ?? 0;
     const goal = profile?.daily_calorie_goal ?? 2000;
     const remaining = Math.max(goal - consumed, 0);
 
 
     const backgroundColor = useThemeColor({}, 'background');
-    const cardColor = useThemeColor({}, 'card');
-    const textColor = useThemeColor({}, 'text');
-    const mutedColor = useThemeColor({}, 'muted');
     const primaryColor = useThemeColor({}, 'primary');
-    const borderColor = useThemeColor({}, 'border');
 
     const mealTypes: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -98,14 +104,14 @@ export default function FoodLoggingScreen() {
     };
 
     const groupLogsByMeal = () => {
-        const grouped: Record<string, typeof todaysLogs> = {
+        const grouped: Record<string, typeof logs> = {
             breakfast: [],
             lunch: [],
             dinner: [],
             snack: [],
         };
 
-        todaysLogs.forEach((log) => {
+        logs.forEach((log) => {
             if (grouped[log.meal_type]) {
                 grouped[log.meal_type].push(log);
             }
@@ -148,7 +154,7 @@ export default function FoodLoggingScreen() {
     const handleSaveLog = async (id: string, updates: { servings: number; meal_type: MealType }) => {
         if (isSaving) return;
 
-        const originalLog = todaysLogs.find(log => log.id === id);
+        const originalLog = logs.find(log => log.id === id);
         if (!originalLog) return;
 
         setIsSaving(true);
