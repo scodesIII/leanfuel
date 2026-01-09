@@ -346,20 +346,21 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         const requestId = `${date}-summary-${Date.now()}`;
         activeSummaryRequests.set(date, requestId);
 
-        set(state => ({
-            days: {
-                ...state.days,
-                [date]: {
-                    logs: cachedDay?.logs ?? [],
-                    summary: cachedDay?.summary ?? null,
-                    logsFetchedAt: cachedDay?.logsFetchedAt ?? 0,
-                    summaryFetchedAt: cachedDay?.summaryFetchedAt ?? 0,
-                    isFetchingLogs: cachedDay?.isFetchingLogs ?? false,
-                    isFetchingSummary: true,
-                    error: null,
+        // Mark as fetching ensure days exists
+        set(state => {
+            const days = ensureDay(state.days, date);
+
+            return {
+                days: {
+                    ...days,
+                    [date]: {
+                        ...days[date],
+                        isFetchingSummary: true,
+                        error: null,
+                    },
                 },
-            },
-        }));
+            };
+        });
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
@@ -373,50 +374,55 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 .maybeSingle();
 
             if (error) throw error;
+
+            // 3️⃣ Stale request guard
             if (activeSummaryRequests.get(date) !== requestId) return;
 
-            set(state => ({
-                days: {
-                    ...state.days,
-                    [date]: {
-                        logs: state.days[date]?.logs ?? [],
-                        summary: data ?? null,
-                        logsFetchedAt: state.days[date]?.logsFetchedAt ?? 0,
-                        summaryFetchedAt: now(),
-                        isFetchingLogs: state.days[date]?.isFetchingLogs ?? false,
-                        isFetchingSummary: false,
-                        error: null,
+            set(state => {
+                const days = ensureDay(state.days, date);
+                
+                return {
+                    days: {
+                        ...days,
+                        [date]: {
+                            ...days[date],
+                            summary: data ?? null,
+                            summaryFetchedAt: now(),
+                            isFetchingSummary: false,
+                            error: null,
+                        },
                     },
-                },
-            }));
+                };
+            });
         } catch (err) {
             if (activeSummaryRequests.get(date) !== requestId) return;
 
-            set(state => ({
-                days: {
-                    ...state.days,
-                    [date]: {
-                        logs: state.days[date]?.logs ?? [],
-                        summary: null,
-                        logsFetchedAt: 0,
-                        summaryFetchedAt: 0,
-                        isFetchingLogs: state.days[date]?.isFetchingLogs ?? false,
-                        isFetchingSummary: false,
-                        error:
-                            err instanceof Error
-                                ? err.message
-                                : 'Failed to fetch summary',
-                    },
-                },
-            }));
+            set(state => {
+                const days = ensureDay(state.days, date);
+
+                return {
+                    days: {
+                        ...days,
+                        [date]: {
+                                ...days[date],
+                                summary: null,
+                                summaryFetchedAt: 0,
+                                isFetchingSummary: false,
+                                error:
+                                    err instanceof Error
+                                        ? err.message
+                                        : 'Failed to fetch summary',
+                            },
+                        },
+                    };
+            });
         } finally {
+            // cleanup guard
             if (activeSummaryRequests.get(date) === requestId) {
                 activeSummaryRequests.delete(date);
             }
         }
     },
-
-  
 
     addLog: async (input: AddFoodLogInput) => {
         const { selectedDate } = get();
