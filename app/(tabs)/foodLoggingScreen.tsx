@@ -12,6 +12,8 @@ import { useUserStore } from '@/stores/userStore';
 import { MealCard } from '@/components/food/MealCard';
 import { DateNavigator } from '@/components/food/DateNavigator';
 import { EditFoodLogModal } from '@/components/food/EditFoodLogModal';
+import { normalizeDate, addDays, isSameDay } from '@/lib/date';
+
 
 
 
@@ -123,21 +125,37 @@ export default function FoodLoggingScreen() {
     const groupedLogs = groupLogsByMeal();
 
 
+    const selectedDateObj = normalizeDate(new Date(selectedDate));
+    const today = normalizeDate(new Date());
+    const yesterday = addDays(today, -1);
+
+    const isToday = isSameDay(selectedDateObj, today);
+    const isYesterday = isSameDay(selectedDateObj, yesterday);
+
+    const label = isToday
+        ? 'Today'
+        : isYesterday
+        ? 'Yesterday'
+        : selectedDateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+    const subLabel = selectedDateObj.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+    });
+
 
     const handlePreviousDay = () => {
-        const current = new Date(selectedDate);
-        current.setDate(current.getDate() - 1);
-        setSelectedDate(current.toISOString().split('T')[0]);
+        const prev = addDays(selectedDateObj, -1);
+        setSelectedDate(prev.toISOString().split('T')[0]);
     };
 
     const handleNextDay = () => {
-        const current = new Date(selectedDate);
-        current.setDate(current.getDate() + 1);
-        const today = new Date().toISOString().split('T')[0];
-        const next = current.toISOString().split('T')[0];
+        const next = addDays(selectedDateObj, 1);
 
+        // prevent going into the future
         if (next <= today) {
-            setSelectedDate(next);
+            setSelectedDate(next.toISOString().split('T')[0]);
         }
     };
 
@@ -205,7 +223,9 @@ export default function FoodLoggingScreen() {
                 {/* Header */}
                 <View style={styles.header}>
                     <DateNavigator
-                        selectedDate={new Date(selectedDate)}
+                        label={label}
+                        subLabel={subLabel}
+                        isToday={isToday}
                         onPrevious={handlePreviousDay}
                         onNext={handleNextDay}
                     />
