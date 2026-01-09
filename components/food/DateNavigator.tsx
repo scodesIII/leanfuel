@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { normalizeDate, isSameDay } from '@/lib/date';
 
 interface DateNavigatorProps {
     selectedDate: Date;
@@ -8,13 +9,6 @@ interface DateNavigatorProps {
     onNext: () => void;
 }
 
-const isSameDay = (date1: Date, date2: Date) =>
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate();
-
-const normalizeDate = (date: Date) =>
-    new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigatorProps) => { 
     const textColor = useThemeColor({}, 'text');
