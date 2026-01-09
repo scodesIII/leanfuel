@@ -14,17 +14,20 @@ import { WaterTracker } from '@/components/dashboard/WaterTracker';
 
 
 const Dashboard = () => {
-    const today = new Date().toISOString().slice(0, 10);
 
     const backgroundColor = useThemeColor({}, 'background');
     const { profile } = useUserStore();
     const user = useUserStore((state) => state.user);
     
-    const fetchSummaryForDate = useFoodLogStore((s) => s.fetchSummaryForDate);
-    const day = useFoodLogStore((s) => s.days[today]);
-    const summary = day?.summary;
+    const today = new Date().toISOString().split('T')[0];
 
+    const { days, fetchSummaryForDate } = useFoodLogStore();
 
+    const day = days[today];
+
+    const summary = day?.summary ?? null;
+    const isLoading = day?.isFetchingSummary ?? false;
+    const error = day?.error ?? null;
 
     const [waterGlasses, setWaterGlasses] = useState(3);
 
@@ -45,6 +48,17 @@ const Dashboard = () => {
         protein: '#60a5fa',
         fat: '#4ade80',
     };
+
+
+
+    if (isLoading && !summary) {
+    return (
+        <SafeAreaView style={{ flex: 1, backgroundColor }}>
+            <ThemedText>Loading…</ThemedText>
+        </SafeAreaView>
+    );
+}
+
 
     useEffect(() => {
         fetchSummaryForDate(today);
