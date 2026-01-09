@@ -1,89 +1,64 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { normalizeDate, isSameDay } from '@/lib/date';
 
 interface DateNavigatorProps {
-    selectedDate: Date;
+    label: string;
+    subLabel: string;
+    isToday: boolean;
     onPrevious: () => void;
     onNext: () => void;
 }
 
-
-export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigatorProps) => { 
+export const DateNavigator = ({
+    label,
+    subLabel,
+    isToday,
+    onPrevious,
+    onNext,
+}: DateNavigatorProps) => {
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
     const backgroundColor = useThemeColor({}, 'background');
     const borderColor = useThemeColor({}, 'border');
 
-    const today = normalizeDate(new Date());
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const isToday = isSameDay(selectedDate, today);
-    const isYesterday = isSameDay(selectedDate, yesterday);
-
-    const locale = 'en-US'; // later from settings
-
-    // Get display label
-    const dateLabel = isToday
-        ? 'Today'
-        : isYesterday
-        ? 'Yesterday'
-        : selectedDate.toLocaleDateString(locale, { weekday: 'long' });
-
-    const fullDate = selectedDate.toLocaleDateString(locale, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-    });
-
-    const isFuture = selectedDate > today;
-    const disableNext = isToday || isFuture;
-
-
-
-
     return (
-            <View style={styles.container}>
-                {/* Previous Day Button */}
-                <TouchableOpacity
-                    style={[styles.arrowButton, { backgroundColor, borderColor }]}
-                    onPress={onPrevious}
-                    activeOpacity={0.7}
-                >
-                    <ChevronLeft size={22} color={textColor} />
-                </TouchableOpacity>
-    
-                {/* Date Display */}
-                <View style={styles.dateCenter}>
-                    <Text style={[styles.dateLabel, { color: textColor }]}>
-                        {dateLabel}
-                    </Text>
-                    <Text style={[styles.dateFull, { color: mutedColor }]}>
-                        {fullDate}
-                    </Text>
-                </View>
-    
-                {/* Next Day Button */}
-                <TouchableOpacity
-                    style={[
-                        styles.arrowButton,
-                        { backgroundColor, borderColor },
-                        isToday && styles.arrowDisabled,
-                    ]}
-                    onPress={onNext}
-                    activeOpacity={0.7}
-                    disabled={disableNext}
-                >
-                    <ChevronRight size={22} color={disableNext ? mutedColor : textColor} />
-                </TouchableOpacity>
+        <View style={styles.container}>
+            {/* Previous */}
+            <TouchableOpacity
+                style={[styles.arrowButton, { backgroundColor, borderColor }]}
+                onPress={onPrevious}
+                activeOpacity={0.7}
+            >
+                <ChevronLeft size={22} color={textColor} />
+            </TouchableOpacity>
+
+            {/* Center */}
+            <View style={styles.dateCenter}>
+                <Text style={[styles.dateLabel, { color: textColor }]}>
+                    {label}
+                </Text>
+                <Text style={[styles.dateFull, { color: mutedColor }]}>
+                    {subLabel}
+                </Text>
             </View>
+
+            {/* Next */}
+            <TouchableOpacity
+                style={[
+                    styles.arrowButton,
+                    { backgroundColor, borderColor },
+                    isToday && styles.arrowDisabled,
+                ]}
+                onPress={onNext}
+                activeOpacity={0.7}
+                disabled={isToday}
+            >
+                <ChevronRight size={22} color={isToday ? mutedColor : textColor} />
+            </TouchableOpacity>
+        </View>
     );
-}
-
-
-
+};
 
 const styles = StyleSheet.create({
     container: {
