@@ -8,6 +8,12 @@ interface DateNavigatorProps {
     onNext: () => void;
 }
 
+const isSameDay = (date1: Date, date2: Date) =>
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+
+
 export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigatorProps) => { 
     const textColor = useThemeColor({}, 'text');
     const mutedColor = useThemeColor({}, 'muted');
@@ -15,13 +21,13 @@ export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigato
     const borderColor = useThemeColor({}, 'border');
 
 
-    const isSameDay = (date1: Date, date2: Date) => {
-        return (
-            date1.getFullYear() === date2.getFullYear() &&
-            date1.getMonth() === date2.getMonth() &&
-            date1.getDate() === date2.getDate()
-        );
-    };
+    // const isSameDay = (date1: Date, date2: Date) => {
+    //     return (
+    //         date1.getFullYear() === date2.getFullYear() &&
+    //         date1.getMonth() === date2.getMonth() &&
+    //         date1.getDate() === date2.getDate()
+    //     );
+    // };
 
     const today = new Date();
     const yesterday = new Date();
