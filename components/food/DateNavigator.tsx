@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
@@ -13,6 +13,8 @@ const isSameDay = (date1: Date, date2: Date) =>
     date1.getMonth() === date2.getMonth() &&
     date1.getDate() === date2.getDate();
 
+const normalizeDate = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigatorProps) => { 
     const textColor = useThemeColor({}, 'text');
@@ -20,37 +22,32 @@ export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigato
     const backgroundColor = useThemeColor({}, 'background');
     const borderColor = useThemeColor({}, 'border');
 
-
-    // const isSameDay = (date1: Date, date2: Date) => {
-    //     return (
-    //         date1.getFullYear() === date2.getFullYear() &&
-    //         date1.getMonth() === date2.getMonth() &&
-    //         date1.getDate() === date2.getDate()
-    //     );
-    // };
-
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    const today = normalizeDate(new Date());
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
     const isToday = isSameDay(selectedDate, today);
     const isYesterday = isSameDay(selectedDate, yesterday);
 
-    // Get display label
-    const getDateLabel = () => {
-        if (isToday) return 'Today';
-        if (isYesterday) return 'Yesterday';
-        return selectedDate.toLocaleDateString('en-US', { weekday: 'long' });
-    };
+    const locale = 'en-US'; // later from settings
 
-    // Get full date string
-    const getFullDate = () => {
-        return selectedDate.toLocaleDateString('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-        });
-    };
+    // Get display label
+    const dateLabel = isToday
+        ? 'Today'
+        : isYesterday
+        ? 'Yesterday'
+        : selectedDate.toLocaleDateString(locale, { weekday: 'long' });
+
+    const fullDate = selectedDate.toLocaleDateString(locale, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+    });
+
+    const isFuture = selectedDate > today;
+    const disableNext = isToday || isFuture;
+
+
 
 
     return (
@@ -67,10 +64,10 @@ export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigato
                 {/* Date Display */}
                 <View style={styles.dateCenter}>
                     <Text style={[styles.dateLabel, { color: textColor }]}>
-                        {getDateLabel()}
+                        {dateLabel}
                     </Text>
                     <Text style={[styles.dateFull, { color: mutedColor }]}>
-                        {getFullDate()}
+                        {fullDate}
                     </Text>
                 </View>
     
@@ -83,9 +80,9 @@ export const DateNavigator = ({ selectedDate, onPrevious, onNext }: DateNavigato
                     ]}
                     onPress={onNext}
                     activeOpacity={0.7}
-                    disabled={isToday}
+                    disabled={disableNext}
                 >
-                    <ChevronRight size={22} color={isToday ? mutedColor : textColor} />
+                    <ChevronRight size={22} color={disableNext ? mutedColor : textColor} />
                 </TouchableOpacity>
             </View>
     );
