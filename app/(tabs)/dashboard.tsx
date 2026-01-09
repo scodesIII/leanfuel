@@ -41,6 +41,10 @@ const Dashboard = () => {
     const carbsConsumed = summary?.total_carbs_g ?? 0;
     const fatConsumed = summary?.total_fat_g ?? 0;
 
+    useEffect(() => {
+        fetchSummaryForDate(today);
+    }, [today]);
+
     const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
 
     const macroColors = {
@@ -52,17 +56,21 @@ const Dashboard = () => {
 
 
     if (isLoading && !summary) {
-    return (
-        <SafeAreaView style={{ flex: 1, backgroundColor }}>
-            <ThemedText>Loading…</ThemedText>
-        </SafeAreaView>
-    );
-}
+        return (
+            <SafeAreaView style={{ flex: 1, backgroundColor }}>
+                <ThemedText>Loading…</ThemedText>
+            </SafeAreaView>
+        );
+    }
 
+    if (error) {
+        return (
+            <SafeAreaView style={{ flex: 1, backgroundColor }}>
+                <ThemedText>{error}</ThemedText>
+            </SafeAreaView>
+        );
+    }
 
-    useEffect(() => {
-        fetchSummaryForDate(today);
-    }, [today]);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor }}>
