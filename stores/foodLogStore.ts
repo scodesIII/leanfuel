@@ -446,9 +446,10 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
         try {
             const logData = {
+                ...input,
+                date_logged: selectedDate,
                 user_id: user.id,
                 consumed_at: input.consumed_at ?? new Date().toISOString(),
-                ...input,
             };
 
             const { data, error } = await supabase
