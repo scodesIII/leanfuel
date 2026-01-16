@@ -9,7 +9,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 // ============================================================================
 
 
-// Simgle food log entry (matches food_logs table in supabase db)
+// Single food log entry (matches food_logs table in supabase db)
 export interface FoodLog {
     id: string;
     user_id: string;
@@ -191,17 +191,24 @@ function isSummaryCacheValid(day: CachedDay | undefined): boolean {
     return now() - day.summaryFetchedAt < CACHE_TTL;
 }
 
+// Soft invalidation — keep data visible, reset timestamps, preserve fetch flags
 const invalidateDay = (
     days: Record<string, CachedDay>,
     date: string
-) => ({
-    ...days,
-    [date]: {
-        ...createEmptyDay(),
-    },
-});
+): Record<string, CachedDay> => {
+    const day = days[date];
+    if (!day) return days;
 
-    
+    return {
+        ...days,
+        [date]: {
+            ...day,                     // Keep logs, summary, fetch flags
+            logsFetchedAt: 0,           // Mark stale
+            summaryFetchedAt: 0,        // Mark stale
+            error: null,                // Clear error
+        },
+    };
+};
 
 
 // Stale request guards
@@ -234,20 +241,20 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         const daysWithEntry = ensureDay(days, date);
         const cachedDay = daysWithEntry[date];
 
-        const requestId = `${date}-${Date.now()}`;
-        activeLogRequests.set(date, requestId);
-
-        // 1️⃣ Serve cache if valid
+        // Serve cache if valid
         if (isLogsCacheValid(cachedDay)) {
             return;
         }
 
-        // 2️⃣ Prevent duplicate fetches for same date
+        // Prevent duplicate fetches for same date
         if (cachedDay?.isFetchingLogs) {
             return;
         }
 
-        // 3️⃣ Mark date as fetching. (SAFE)
+        const requestId = `${date}-${Date.now()}`;
+        activeLogRequests.set(date, requestId);
+
+        // Mark date as fetching
         set(state => {
             const days = ensureDay(state.days, date);
 
@@ -280,7 +287,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            // 4️⃣ Stale request guard
+            // Stale request guard
             if (activeLogRequests.get(date) !== requestId) {
                 return;
             }
@@ -330,19 +337,22 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     fetchSummaryForDate: async (date: string) => {
+        // Add ensureDay at top for consistency with fetchLogsForDate
         const { days } = get();
-        const cachedDay = days[date];
+        const daysWithEntry = ensureDay(days, date);
+        const cachedDay = daysWithEntry[date];
 
-        // 1️⃣ Serve cache if valid
-        if (cachedDay && isSummaryCacheValid(cachedDay)) {
+        // Serve cache if valid
+        if (isSummaryCacheValid(cachedDay)) {
             return;
         }
 
-        // 2️⃣ Prevent duplicate fetches
+        // Prevent duplicate fetches
         if (cachedDay?.isFetchingSummary) {
             return;
         }
 
+        // Move request guard AFTER cache checks
         const requestId = `${date}-summary-${Date.now()}`;
         activeSummaryRequests.set(date, requestId);
 
@@ -375,7 +385,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            // 3️⃣ Stale request guard
+            // Stale request guard
             if (activeSummaryRequests.get(date) !== requestId) return;
 
             set(state => {
@@ -468,7 +478,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            // 🔥 Invalidate cache for affected date
+            // Invalidate cache for affected date
             set(state => ({
                 days: invalidateDay(state.days, selectedDate),
             }));
@@ -501,6 +511,8 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
     },
 
     updateLog: async (id: string, updates: Partial<AddFoodLogInput>) => {
+        const { selectedDate } = get();
+
         try {
             const { data: existing, error: fetchError } = await supabase
             .from('food_logs')
@@ -523,7 +535,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             const newDate = data.date_logged;
 
-            // 🔥 Invalidate both dates if changed
+            // Invalidate both dates if changed
             set(state => {
                 let days = state.days;
                 days = invalidateDay(days, oldDate);
@@ -533,7 +545,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 return { days };
             });
 
-            // 🔄 Refetch affected days
+            // Refetch affected days
             await Promise.all([
                 get().fetchLogsForDate(oldDate),
                 get().fetchSummaryForDate(oldDate),
@@ -546,11 +558,27 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
             ]);
 
         } catch (err) {
-            console.error('Failed to update log:', err);
+            // Add error state for updateLog
+            const message = err instanceof Error ? err.message : 'Failed to update log';
+            
+            set(state => {
+                const days = ensureDay(state.days, selectedDate);
+                return {
+                    days: {
+                        ...days,
+                        [selectedDate]: {
+                            ...days[selectedDate],
+                            error: message,
+                        },
+                    },
+                };
+            });
         }
     },
 
     deleteLog: async (id: string) => {
+        const { selectedDate } = get();
+
         try {
             const { data: existing, error: fetchError } = await supabase
             .from('food_logs')
@@ -569,7 +597,7 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
 
             if (error) throw error;
 
-            // 🔥 Invalidate cache for that date
+            // Invalidate cache for that date
             set(state => ({
                 days: invalidateDay(state.days, oldDate),
             }));
@@ -580,7 +608,21 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
                 get().fetchSummaryForDate(oldDate),
             ]);
         } catch (err) {
-           console.error('Failed to delete log:', err);
+            // Add error state for deleteLog
+            const message = err instanceof Error ? err.message : 'Failed to delete log';
+            
+            set(state => {
+                const days = ensureDay(state.days, selectedDate);
+                return {
+                    days: {
+                        ...days,
+                        [selectedDate]: {
+                            ...days[selectedDate],
+                            error: message,
+                        },
+                    },
+                };
+            });
         }
     },
 
@@ -590,16 +632,20 @@ export const useFoodLogStore = create<FoodLogStore>((set, get) => ({
         set({ selectedDate: date });
     },
 
+    // Use ensureDay to prevent crash if day doesn't exist
     clearError: (date: string) => {
-        set(state => ({
-            days: {
-                ...state.days,
-                [date]: {
-                    ...state.days[date],
-                    error: null,
+        set(state => {
+            const days = ensureDay(state.days, date);
+            return {
+                days: {
+                    ...days,
+                    [date]: {
+                        ...days[date],
+                        error: null,
+                    },
                 },
-            },
-        }));
+            };
+        });
     },
 
     reset: () => {
