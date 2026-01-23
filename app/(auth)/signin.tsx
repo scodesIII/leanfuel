@@ -36,6 +36,23 @@ export default function SignIn() {
     return emailRegex.test(email) && email.length <= 254; // RFC 5321 limit
   };
 
+  const validatePasswordForSignIn = (password: string) => {
+    if (!password) {
+      return 'Password is required';
+    }
+
+    if (password.length < 6) {
+      return 'Invalid email or password';
+    }
+
+    if (password.length > 72) {
+      return 'Invalid email or password';
+    }
+
+    return null;
+  };
+
+
   // Optional: Add rate limiting helper
   const useRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
   const attempts = useRef<number[]>([]);
@@ -84,6 +101,12 @@ export default function SignIn() {
       return;
     }
 
+    const passwordError = validatePasswordForSignIn(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     setLoading(true);
     setError(''); // Clear previous errors
 
@@ -105,10 +128,10 @@ export default function SignIn() {
       // Verify user is authenticated
       if (data?.user) {
         // Optional: Check if email is verified
-        // if (!data.user.email_confirmed_at) {
-        //   Alert.alert('Error', 'Please verify your email before signing in');
-        //   return;
-        // }
+        if (!data.user.email_confirmed_at) {
+          Alert.alert('Error', 'Please verify your email before signing in');
+          return;
+        }
 
         // Success - reset navigation stack and navigate to main app
         router.dismissAll();
