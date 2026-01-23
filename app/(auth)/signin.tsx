@@ -3,8 +3,6 @@ import {
   View, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity,
 } from 'react-native';
 import { supabase } from '@/lib/superbase';
-// import { useThemeColor } from '@/hooks/useThemeColor';
-// import { Button } from '@/components/ui/button';
 import { TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -39,40 +37,40 @@ export default function SignIn() {
   };
 
   // Optional: Add rate limiting helper
-  // const useRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
-  // const attempts = useRef([]);
+  const useRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
+  const attempts = useRef<number[]>([]);
 
-  // const isRateLimited = () => {
-  //   const now = Date.now();
-  //   const recentAttempts = attempts.current.filter(
-  //     attempt => now - attempt < windowMs
-  //   );
-  //   attempts.current = recentAttempts;
+  const isRateLimited = () => {
+    const now = Date.now();
+    const recentAttempts = attempts.current.filter(
+      attempt => now - attempt < windowMs
+    );
+    attempts.current = recentAttempts;
 
-  //   if (recentAttempts.length >= maxAttempts) {
-  //     return true;
-  //   }
+    if (recentAttempts.length >= maxAttempts) {
+      return true;
+    }
 
-  //   attempts.current.push(now);
-  //     return false;
-  //   };
+    attempts.current.push(now);
+    return false;
+  };
 
-  //   return { isRateLimited };
-  // };
+    return { isRateLimited };
+  };
 
 
   // Usage with rate limiting
-  // const handleSignInWithRateLimit = async () => {
-  //   const { isRateLimited } = useRateLimit();
+  const handleSignInWithRateLimit = async () => {
+    const { isRateLimited } = useRateLimit();
 
-  //   if (isRateLimited()) {
-  //     Alert.alert('Error', 'Too many login attempts. Please try again later.');
-  //     return;
-  //   }
+    if (isRateLimited()) {
+      Alert.alert('Error', 'Too many login attempts. Please try again later.');
+      return;
+    }
 
-  //   // Continue with regular sign-in logic...
-  //   await handleSignIn();
-  // };
+    // Continue with regular sign-in logic...
+    await handleSignIn();
+  };
 
   const handleSignIn = async () => {
     // Input validation
@@ -184,7 +182,7 @@ export default function SignIn() {
                 title="Sign In"
                 loading={loading}
                 disabled={loading}
-                onPress={handleSignIn}
+                onPress={handleSignInWithRateLimit}
                 style={{ marginTop: 24 }}
               />
 
