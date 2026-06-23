@@ -53,41 +53,6 @@ export default function SignIn() {
   };
 
 
-  // Optional: Add rate limiting helper
-  const useRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
-  const attempts = useRef<number[]>([]);
-
-  const isRateLimited = () => {
-    const now = Date.now();
-    const recentAttempts = attempts.current.filter(
-      attempt => now - attempt < windowMs
-    );
-    attempts.current = recentAttempts;
-
-    if (recentAttempts.length >= maxAttempts) {
-      return true;
-    }
-
-    attempts.current.push(now);
-    return false;
-  };
-
-    return { isRateLimited };
-  };
-
-
-  // Usage with rate limiting
-  const handleSignInWithRateLimit = async () => {
-    const { isRateLimited } = useRateLimit();
-
-    if (isRateLimited()) {
-      Alert.alert('Error', 'Too many login attempts. Please try again later.');
-      return;
-    }
-
-    // Continue with regular sign-in logic...
-    await handleSignIn();
-  };
 
   const handleSignIn = async () => {
     // Input validation
@@ -205,7 +170,7 @@ export default function SignIn() {
                 title="Sign In"
                 loading={loading}
                 disabled={loading}
-                onPress={handleSignInWithRateLimit}
+                onPress={handleSignIn}
                 style={{ marginTop: 24 }}
               />
 
