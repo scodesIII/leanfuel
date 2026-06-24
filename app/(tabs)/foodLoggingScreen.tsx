@@ -147,15 +147,18 @@ export default function FoodLoggingScreen() {
 
     const handlePreviousDay = () => {
         const prev = addDays(selectedDateObj, -1);
-        setSelectedDate(prev.toISOString().split('T')[0]);
+        const prevDateString = prev.toISOString().split('T')[0];
+        setSelectedDate(prevDateString);
     };
 
     const handleNextDay = () => {
         const next = addDays(selectedDateObj, 1);
+        const nextDateString = next.toISOString().split('T')[0];
+        const todaysDateString = today.toISOString().split('T')[0];
 
         // prevent going into the future
-        if (next <= today) {
-            setSelectedDate(next.toISOString().split('T')[0]);
+        if (nextDateString <= todaysDateString) {
+            setSelectedDate(nextDateString);
         }
     };
 
