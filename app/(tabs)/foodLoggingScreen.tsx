@@ -12,7 +12,7 @@ import { useUserStore } from '@/stores/userStore';
 import { MealCard } from '@/components/food/MealCard';
 import { DateNavigator } from '@/components/food/DateNavigator';
 import { EditFoodLogModal } from '@/components/food/EditFoodLogModal';
-import { normalizeDate, addDays, isSameDay } from '@/lib/date';
+import { normalizeDate, addDays, isSameDay, parseLocalDate, dateToLocalString } from '@/lib/date';
 
 
 
@@ -125,7 +125,7 @@ export default function FoodLoggingScreen() {
     const groupedLogs = groupLogsByMeal();
 
 
-    const selectedDateObj = normalizeDate(new Date(selectedDate));
+    const selectedDateObj = parseLocalDate(selectedDate);
     const today = normalizeDate(new Date());
     const yesterday = addDays(today, -1);
 
@@ -146,19 +146,41 @@ export default function FoodLoggingScreen() {
 
 
     const handlePreviousDay = () => {
+        console.log('🔴 handlePreviousDay called');
+        console.log('selectedDate (from store):', selectedDate);
+        console.log('selectedDateObj (parsed):', selectedDateObj);
+
         const prev = addDays(selectedDateObj, -1);
-        const prevDateString = prev.toISOString().split('T')[0];
+        console.log('prev (after addDays):', prev);
+
+        const prevDateString = dateToLocalString(prev);
+        console.log('prevDateString (converted to string):', prevDateString);
+
         setSelectedDate(prevDateString);
     };
 
     const handleNextDay = () => {
+        console.log('🟢 handleNextDay called');
+        console.log('selectedDate (from store):', selectedDate);
+        console.log('selectedDateObj (parsed):', selectedDateObj);
+        console.log('today:', today);
+
         const next = addDays(selectedDateObj, 1);
-        const nextDateString = next.toISOString().split('T')[0];
-        const todaysDateString = today.toISOString().split('T')[0];
+        console.log('next (after addDays):', next);
+
+        const nextDateString = dateToLocalString(next);
+        const todaysDateString = dateToLocalString(today);
+
+        console.log('nextDateString:', nextDateString);
+        console.log('todaysDateString:', todaysDateString);
+        console.log('comparison (nextDateString <= todaysDateString):', nextDateString <= todaysDateString);
 
         // prevent going into the future
         if (nextDateString <= todaysDateString) {
+            console.log('✅ Condition TRUE, calling setSelectedDate');
             setSelectedDate(nextDateString);
+        } else {
+            console.log('❌ Condition FALSE, NOT calling setSelectedDate');
         }
     };
 
