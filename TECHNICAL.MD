@@ -656,6 +656,68 @@ $$;
 ```
 
 
+### Challenge 5: Timezone Offset in Date String Parsing
+
+**Problem:** Date navigation moved dates backward by 1-2 days unpredictably. When parsing `"2026-06-24"` with `new Date(selectedDate)`, the app showed `2026-06-23T23:00:00.000Z` in logs.
+
+**Root Cause:** JavaScript's `new Date(string)` treats date strings as UTC, not local timezone:
+- `new Date("2026-06-24")` → June 24 UTC midnight
+- User in UTC+1 → Actually June 23 at 11 PM local time
+- `.toISOString()` converts back to UTC → shows June 23
+- Users went back 2 days when clicking "previous" due to timezone offset
+
+**Solution:** Parse date strings directly into local timezone without UTC conversion:
+
+```typescript
+// lib/date.ts - WRONG (UTC interpretation):
+const selectedDateObj = normalizeDate(new Date(selectedDate));
+
+// lib/date.ts - CORRECT (local timezone):
+export const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day); // Local timezone, not UTC
+};
+
+// lib/date.ts - Convert back to string safely:
+export const dateToLocalString = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+```
+
+**Application in handlers:**
+
+```typescript
+// FoodLoggingScreen.tsx - WRONG:
+const nextDateString = next.toISOString().split('T')[0]; // Converts to UTC
+
+// FoodLoggingScreen.tsx - CORRECT:
+const nextDateString = dateToLocalString(next); // Extracts local date
+```
+
+**Key Insight:** Never rely on `toISOString()` for date-only operations. Always extract local date components manually or use a date library like `date-fns`.
+
+**Industry Best Practices:**
+
+| Approach | Best For | Trade-off |
+|----------|----------|-----------|
+| **String comparison** | MVP, simple apps | Limited operations (what we did) |
+| **date-fns library** | Production apps | Small bundle size (2KB tree-shakeable) |
+| **Day.js** | Lightweight apps | Immutable API, fewer features |
+| **Moment.js** | Legacy code | Large bundle (66KB), deprecated |
+
+For LeanFuel MVP, we chose string-based date handling. For Phase 2 with complex features (recurring entries, timezone-aware scheduling), migrate to `date-fns`:
+
+```typescript
+import { addDays, format } from 'date-fns';
+
+const next = addDays(selectedDate, 1);
+const nextString = format(next, 'yyyy-MM-dd'); // Always local timezone
+```
+
+
 
 ## Key Metrics & Stats
 
