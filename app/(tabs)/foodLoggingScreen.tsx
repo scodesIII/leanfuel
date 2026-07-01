@@ -273,13 +273,6 @@ export default function FoodLoggingScreen() {
                 </View>
             </ScrollView>
 
-            {/* Floating Action Button */}
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: primaryColor }]}
-                onPress={() => handleOpenSearch('snack')}
-            >
-                <Plus size={24} color="white" />
-            </TouchableOpacity>
 
             {/* Search Modal */}
             <FoodSearchModal
