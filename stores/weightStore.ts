@@ -115,8 +115,37 @@ export const useWeightStore = create<WeightState>((set, get) => ({
     },
 
 
+    // Delete a log. Server-side delete_weight_log() atomically removes the row
+    // AND re-points profiles.current_weight at the newest remaining entry
+    // (or clears it if none remain) in one transaction.
+    deleteWeightLog: async (id: string) => {
+        const user = useUserStore.getState().user;
+        if (!user) return;
 
-    deleteWeightLog: async (id: string) => { },
+        set({ isLoading: true, error: null });
+        
+        try {
+            const result = await retryOperation(
+                async () => supabase.rpc('delete_weight_log', { p_log_id: id }),
+                { maxRetries: 3, retryDelay: 1000 }
+            );
+
+            if (result.error) {
+                console.error('Error deleting weight log:', result.error);
+                throw result.error;
+            }
+
+            await get().fetchRecent();
+            await useUserStore.getState().fetchProfile();
+
+        } catch (error) {
+            console.error('Error deleting weight log:', error);
+            set({ error: 'Failed to delete weight entry' });
+            throw error;
+        } finally {
+            set({ isLoading: false });
+        }
+    },
 
     reset: () => set({ logs: [], isLoading: false, error: null, lastFetched: null }),
 
