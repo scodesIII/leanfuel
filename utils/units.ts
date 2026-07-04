@@ -6,6 +6,10 @@ export const unitLabel = (units: PreferredUnits): string => {
     return units === 'metric' ? 'kg' : 'lb';
 }
 
+export const roundTo1Decimal = (value: number): number => {
+    return Math.round(value * 10) / 10;
+}
+
 export const kgToDisplay = (kg:number, units: PreferredUnits): number => {
     if (units === 'metric') {
         return roundTo1Decimal(kg);
@@ -20,8 +24,4 @@ export const displayToKg = (value:number, units: PreferredUnits): number => {
     } else {
         return roundTo1Decimal(value / LB_PER_KG);
     }
-}
-
-export const roundTo1Decimal = (value: number): number => {
-    return Math.round(value * 10) / 10;
 }
