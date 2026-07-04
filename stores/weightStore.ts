@@ -2,31 +2,31 @@
 
 import { create } from 'zustand';
 import { supabase } from '@/lib/superbase';
-import { retryOperation } from '@/utils/errorHandling';
 import { addDays, dateToLocalString, normalizeDate } from '@/lib/date';
 import { useUserStore } from './userStore';
 
-export interface weightLog {
+export interface WeightLog {
     id: string;
     user_id: string;
     weight: number;      // always kilograms; convert at the UI edge via preferred_units
     date: string;        // "YYYY-MM-DD"
-    note: string | null;
+    notes: string | null;
     created_at: string;
 }
 
 interface WeightState {
     // Most-recent-first list of the currently fetched window
-    logs: weightLog[];
+    logs: WeightLog[];
 
     // loading / error state
     isLoading: boolean;
-    error: string | null;
     lastFetched: number | null; // timestamp of last successful fetch
+    saveError: string | null; 
+    loadError: string | null; 
 
     // Action methods
     fetchRecent: (days?: number) => Promise<void>;
-    addWeightLog: (weight: number, date?: string, note?: string) => Promise<void>;
+    addWeightLog: (weight: number, date?: string, notes?: string) => Promise<void>;
     deleteWeightLog: (id: string) => Promise<void>;
     reset: () => void;
 }
@@ -34,20 +34,21 @@ interface WeightState {
 export const useWeightStore = create<WeightState>((set, get) => ({
     logs: [],
     isLoading: false,
-    error: null,
+    saveError: null,
+    loadError: null,
     lastFetched: null,
 
-    // Fetch the trailing `days` window default(30) for the curent user
+    // Fetch the trailing `days` window default(30) for the current user
     // RLS already scopes to the authenticated user; the user_id filter is
     // explicit for clarity and index use (idx_weight_logs_user_date).
     fetchRecent: async (days = 30) => {
         const { user } = useUserStore.getState();
         if (!user) {
-            set({ logs: [], error: null });
+            set({ loadError: 'Failed to load weight history' });
             return;
         }
 
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, loadError: null });
 
         try {
             const cutoff = dateToLocalString(addDays(normalizeDate(new Date()), -days));
@@ -61,7 +62,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
 
             if (error) {
                 console.error('Error fetching weight logs:', error);
-                set({ error: error.message });
+                set({ loadError: 'Failed to load weight history' });
                 return;
             }
 
@@ -69,7 +70,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
 
         } catch (error) {
             console.error('Error fetching weight logs:', error);
-            set({ error: 'Failed to load weight history' });
+            set({ loadError: 'Failed to load weight history' });
         } finally {
             set({ isLoading: false });
         }
@@ -80,34 +81,38 @@ export const useWeightStore = create<WeightState>((set, get) => ({
     // the log AND syncs profiles.current_weight in one transaction, so there is
     // no client-side split-brain. We then refetch the window and pull the
     // server-synced profile back into userStore.
-    addWeightLog: async (weight: number, date?: string, note?: string) => {
+    addWeightLog: async (weight: number, date?: string, notes?: string) => {
         const user = useUserStore.getState().user;
-        if (!user) return;
+        
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
 
-        set({ isLoading: true, error: null });
+
+        set({ isLoading: true, saveError: null });
 
         try {
-            const result = await retryOperation(
-                async () =>
-                    supabase.rpc('log_weight', {
-                        p_weight: weight,
-                        p_date: date ?? dateToLocalString(normalizeDate(new Date())),
-                        p_notes: note ?? null,
-                    }),
-                { maxRetries: 3, retryDelay: 1000 }
-            );
+            const { error } = await supabase.rpc('log_weight', {
+                p_weight: weight,
+                p_date: date ?? dateToLocalString(normalizeDate(new Date())),
+                p_notes: notes ?? null,
+            });
 
-            if (result.error) {
-                console.error('Error logging weight:', result.error);
-                throw result.error;
+            if (error) {
+                console.error('Error logging weight:', error);
+                throw error;
             }
 
-            await get().fetchRecent();
-            await useUserStore.getState().fetchProfile(); // reflect synced current_weight
+            await Promise.allSettled([
+                get().fetchRecent(),
+                useUserStore.getState().fetchProfile(),
+            ]);
+
+
 
         } catch (error) {
             console.error('Error logging weight:', error);
-            set({ error: 'Failed to save weight' });
+            set({ saveError: 'Failed to save weight' });
             throw error; // let the modal surface a user-friendly message
         } finally {
             set({ isLoading: false });
@@ -120,34 +125,36 @@ export const useWeightStore = create<WeightState>((set, get) => ({
     // (or clears it if none remain) in one transaction.
     deleteWeightLog: async (id: string) => {
         const user = useUserStore.getState().user;
-        if (!user) return;
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
 
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, saveError: null });
         
         try {
-            const result = await retryOperation(
-                async () => supabase.rpc('delete_weight_log', { p_log_id: id }),
-                { maxRetries: 3, retryDelay: 1000 }
-            );
+            const { error } = await supabase.rpc('delete_weight_log', { p_id: id });
 
-            if (result.error) {
-                console.error('Error deleting weight log:', result.error);
-                throw result.error;
+            if (error) {
+                console.error('Error deleting weight log:', error);
+                throw error;
             }
 
-            await get().fetchRecent();
-            await useUserStore.getState().fetchProfile();
+            await Promise.allSettled([
+                get().fetchRecent(),
+                useUserStore.getState().fetchProfile(),
+            ]);
+
 
         } catch (error) {
             console.error('Error deleting weight log:', error);
-            set({ error: 'Failed to delete weight entry' });
+            set({ saveError: 'Failed to delete weight entry' });
             throw error;
         } finally {
             set({ isLoading: false });
         }
     },
 
-    reset: () => set({ logs: [], isLoading: false, error: null, lastFetched: null }),
+    reset: () => set({ logs: [], isLoading: false, saveError: null, loadError: null, lastFetched: null }),
 
 
 }));
