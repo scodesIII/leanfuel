@@ -31,3 +31,26 @@ export const dateToLocalString = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+const getOrdinalSuffix = (day: number): string => {
+  const remainder100 = day % 100;
+  if (remainder100 >= 11 && remainder100 <= 13) return 'th';
+
+  switch (day % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+}
+
+
+export const formatLongDate = (dateString: string): string => {
+  const date = parseLocalDate(dateString);
+
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const month = date.toLocaleDateString('en-US', { month: 'long' });
+  const day = date.getDate();
+
+  return `${weekday}, ${month} ${day}${getOrdinalSuffix(day)}`;
+}
