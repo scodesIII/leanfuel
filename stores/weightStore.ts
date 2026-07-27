@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { supabase } from '@/lib/superbase';
-import { addDays, dateToLocalString, normalizeDate } from '@/lib/date';
+import { dateToLocalString, normalizeDate } from '@/lib/date';
 import { useUserStore } from './userStore';
 
 export interface WeightLog {
@@ -16,7 +16,7 @@ export interface WeightLog {
 
 interface WeightState {
     // Most-recent-first list of the currently fetched window
-    logs: WeightLog[];
+    latest: WeightLog[] | null;
 
     // loading / error state
     isLoading: boolean;
@@ -25,14 +25,14 @@ interface WeightState {
     loadError: string | null; 
 
     // Action methods
-    fetchRecent: (days?: number) => Promise<void>;
+    fetchLatest: (days?: number) => Promise<void>;
     addWeightLog: (weight: number, date?: string, notes?: string) => Promise<void>;
     deleteWeightLog: (id: string) => Promise<void>;
     reset: () => void;
 }
 
 export const useWeightStore = create<WeightState>((set, get) => ({
-    logs: [],
+    latest: [],
     isLoading: false,
     saveError: null,
     loadError: null,
@@ -41,7 +41,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
     // Fetch the trailing `days` window default(30) for the current user
     // RLS already scopes to the authenticated user; the user_id filter is
     // explicit for clarity and index use (idx_weight_logs_user_date).
-    fetchRecent: async (days = 30) => {
+    fetchLatest: async (days = 30) => {
         const { user } = useUserStore.getState();
         if (!user) {
             set({ loadError: 'Failed to load weight history' });
@@ -51,14 +51,16 @@ export const useWeightStore = create<WeightState>((set, get) => ({
         set({ isLoading: true, loadError: null });
 
         try {
-            const cutoff = dateToLocalString(addDays(normalizeDate(new Date()), -days));
+            // const cutoff = dateToLocalString(addDays(normalizeDate(new Date()), -days));
 
             const { data, error } = await supabase
                 .from('weight_logs')
                 .select('*')
                 .eq('user_id', user.id)
-                .gte('date', cutoff)
-                .order('date', { ascending: false });
+                // .gte('date', cutoff)
+                .order('date', { ascending: false })
+                .limit(1)
+                .maybeSingle();
 
             if (error) {
                 console.error('Error fetching weight logs:', error);
@@ -66,7 +68,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
                 return;
             }
 
-            set({ logs: data ?? [], lastFetched: Date.now() });
+            set({ latest: data ?? [], lastFetched: Date.now() });
 
         } catch (error) {
             console.error('Error fetching weight logs:', error);
@@ -104,7 +106,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
             }
 
             await Promise.allSettled([
-                get().fetchRecent(),
+                get().fetchLatest(),
                 useUserStore.getState().fetchProfile(),
             ]);
 
@@ -140,7 +142,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
             }
 
             await Promise.allSettled([
-                get().fetchRecent(),
+                get().fetchLatest(),
                 useUserStore.getState().fetchProfile(),
             ]);
 
@@ -154,7 +156,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
         }
     },
 
-    reset: () => set({ logs: [], isLoading: false, saveError: null, loadError: null, lastFetched: null }),
+    reset: () => set({ latest: null, isLoading: false, saveError: null, loadError: null, lastFetched: null }),
 
 
 }));
