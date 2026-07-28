@@ -6,7 +6,7 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { Input } from '@/components/common/Input';
 import { useUserStore } from '@/stores/userStore';
 import { useWeightStore } from '@/stores/weightStore';
-import { kgToDisplay, displayToKg, unitLabel, roundTo1Decimal } from '@/utils/units';
+import { kgToDisplay, displayToKg, unitLabel,  } from '@/utils/units';
 
 
 interface LogWeightModalProps {

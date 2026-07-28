@@ -15,8 +15,7 @@ export interface WeightLog {
 }
 
 interface WeightState {
-    // Most-recent-first list of the currently fetched window
-    latest: WeightLog[] | null;
+    latest: WeightLog | null;
 
     // loading / error state
     isLoading: boolean;
@@ -25,23 +24,21 @@ interface WeightState {
     loadError: string | null; 
 
     // Action methods
-    fetchLatest: (days?: number) => Promise<void>;
+    fetchLatest: () => Promise<void>;
     addWeightLog: (weight: number, date?: string, notes?: string) => Promise<void>;
     deleteWeightLog: (id: string) => Promise<void>;
     reset: () => void;
 }
 
 export const useWeightStore = create<WeightState>((set, get) => ({
-    latest: [],
+    latest: null,
     isLoading: false,
     saveError: null,
     loadError: null,
     lastFetched: null,
 
-    // Fetch the trailing `days` window default(30) for the current user
-    // RLS already scopes to the authenticated user; the user_id filter is
-    // explicit for clarity and index use (idx_weight_logs_user_date).
-    fetchLatest: async (days = 30) => {
+
+    fetchLatest: async () => {
         const { user } = useUserStore.getState();
         if (!user) {
             set({ loadError: 'Failed to load weight history' });
@@ -51,13 +48,11 @@ export const useWeightStore = create<WeightState>((set, get) => ({
         set({ isLoading: true, loadError: null });
 
         try {
-            // const cutoff = dateToLocalString(addDays(normalizeDate(new Date()), -days));
 
             const { data, error } = await supabase
                 .from('weight_logs')
                 .select('*')
                 .eq('user_id', user.id)
-                // .gte('date', cutoff)
                 .order('date', { ascending: false })
                 .limit(1)
                 .maybeSingle();
@@ -68,7 +63,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
                 return;
             }
 
-            set({ latest: data ?? [], lastFetched: Date.now() });
+            set({ latest: data ?? null, lastFetched: Date.now() });
 
         } catch (error) {
             console.error('Error fetching weight logs:', error);
@@ -81,7 +76,7 @@ export const useWeightStore = create<WeightState>((set, get) => ({
 
     // Add or edit a day's weight. Server-side log_weight() atomically upserts
     // the log AND syncs profiles.current_weight in one transaction, so there is
-    // no client-side split-brain. We then refetch the window and pull the
+    // no client-side split-brain. We then refetch the latest log and pull the
     // server-synced profile back into userStore.
     addWeightLog: async (weight: number, date?: string, notes?: string) => {
         const user = useUserStore.getState().user;
