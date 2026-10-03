@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 
 export function ProfileHeader() {
-    const { profile, user } = useUserStore();
+    const { profile, user, signOut } = useUserStore();
 
 
     const textColor = useThemeColor({}, 'text');
@@ -25,6 +25,14 @@ export function ProfileHeader() {
         }
         return name[0]?.toUpperCase() || '?';
     }
+
+    const handleSignOut = async () => {
+        try {
+            await signOut();
+        } catch (error) {
+            console.error('Sign out failed:', error);
+        }
+    };
 
     const displayName = profile?.display_name || profile?.full_name || 'User';
     const email = user?.email || 'No email';  
@@ -55,6 +63,15 @@ export function ProfileHeader() {
             >
                 <Text style={[styles.editButtonText, { color: textColor }]}>
                     Edit Profile
+                </Text>
+            </TouchableOpacity>
+            {/* Sign Out Button */}
+            <TouchableOpacity 
+                style={[styles.signOutButton, { borderColor }]}
+                onPress={handleSignOut}
+            >
+                <Text style={[styles.signOutButtonText, { color: textColor }]}>
+                    Sign Out
                 </Text>
             </TouchableOpacity>
         </View>
@@ -97,6 +114,17 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     editButtonText: {
+        fontSize: 15,
+        fontWeight: '500',
+    },
+    signOutButton: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 20,
+        borderWidth: 1,
+        marginTop: 10,
+    },
+    signOutButtonText: {
         fontSize: 15,
         fontWeight: '500',
     },
