@@ -91,9 +91,9 @@ export function MealCard({ mealType, foods, onAddPress, onDeleteLog, onPressLog 
                 </View>
             ) : (
                 <View style={styles.emptyState}>
-                    <Text style={[styles.emptyText, { color: mutedColor }]}>
+                    {/* <Text style={[styles.emptyText, { color: mutedColor }]}>
                         No foods logged yet
-                    </Text>
+                    </Text> */}
                     <TouchableOpacity
                         style={[styles.emptyButton, { backgroundColor: primaryColor + '15' }]}
                         onPress={onAddPress}

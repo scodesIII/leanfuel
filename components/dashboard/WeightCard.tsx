@@ -43,7 +43,7 @@ export const WeightCard = () => {
                             {displayWeight}
                         </Text>
                         <Text style={[styles.dateText, { color: mutedColor }]}>
-                            {dateText}
+                            Logged on {dateText}
                         </Text>
                     </View>
 

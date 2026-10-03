@@ -12,6 +12,7 @@ import { ProgressBar } from '@/components/onboarding/ProgressBar';
 import { useOnboardingStore } from '@/stores/useOnboardingStore';
 import { ThemedText } from '@/components/ThemedText';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { SignupStep } from './steps/SignupStep';
 
 const steps = [
     { title: 'Goal', component: GoalStep, icon: Target },
@@ -20,11 +21,13 @@ const steps = [
     { title: 'Info', component: PersonalInfoStep, icon: User },
     { title: 'Target', component: TargetStep, icon: Calendar },
     { title: 'Review', component: ReviewStep, icon: Check },
+    { title: 'Account', component: SignupStep, icon: User }, 
 ];
 
 export const OnboardingFlow = () => {
     const { currentStep, nextStep, prevStep, goToStep } = useOnboardingStore();
     const primaryColor = useThemeColor({}, 'primary');
+    const lastStep = steps.length - 1;
 
     const CurrentStepComponent = steps[currentStep]?.component || steps[0].component;
 
@@ -39,7 +42,7 @@ export const OnboardingFlow = () => {
                 </View>
 
                 {/* Progress Bar */}
-                <ProgressBar currentStep={currentStep} onStepPress={goToStep} />
+                { currentStep !== lastStep && (<ProgressBar currentStep={currentStep} onStepPress={goToStep} />) }
             </View>
 
             {/* Step Content */}

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 
 import { StatusBar } from 'expo-status-bar';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 
@@ -114,7 +114,7 @@ export default function Home() {
 
         {/* Call to action buttons */}
         <View style={styles.buttonContainer}>
-          <Link href="/(auth)/signup" asChild>
+          <Link href="/onboarding" asChild>
             <Button
               title="Get Started"
               variant="primary"

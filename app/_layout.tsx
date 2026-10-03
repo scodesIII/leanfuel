@@ -76,7 +76,7 @@ export default function RootLayout() {
     // Protected routes include: dashboard (tabs), onboarding
     if (!user) {
       // Allow access to public routes (home, signin, signup)
-      if (isHome || inAuthGroup) {
+      if (isHome || inAuthGroup || isOnboarding) {
         return; // User is on a public route, allow access
       }
 
