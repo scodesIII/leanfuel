@@ -132,3 +132,5 @@ CLAUDE.md
 
 
 .mcp.json
+.agents/
+skills-lock.json
