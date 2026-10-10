@@ -1,5 +1,7 @@
 # Database Migrations
 
+Legacy, applied by hand. Superseded by supabase/migrations/.
+
 This directory contains database migrations for the LeanFuel app. Each migration is split into small, atomic files for easy rollback and maintenance.
 
 ## Migration Structure
@@ -20,11 +22,15 @@ Each migration consists of two files:
 005_create_macro_function.sql
 006_create_complete_onboarding.sql
 007_create_helper_functions.sql
+008_add_water_tracking.sql
+009_baseline_food_schema.sql
 ```
 
 ### Rollback Migrations (reverse order)
 ```bash
 # Run rollbacks in REVERSE order:
+009_rollback.sql   # DESTRUCTIVE - drops food tables (guarded)
+008_rollback.sql
 007_rollback.sql
 006_rollback.sql
 005_rollback.sql
@@ -65,6 +71,16 @@ Each migration consists of two files:
 
 ### 007: Create Helper Functions
 - `get_nutrition_goals()` - Fetch user goals
+
+### 008: Add Water Tracking
+- `water_logs` + `daily_water_summary` tables
+- Logging, quick-add, history and delete functions
+
+### 009: Baseline Food Schema
+- Captures `food_items`, `food_logs`, `daily_nutrition_summary` and the
+  `popular_food_items` view, which were originally created in the dashboard
+- Already applied in production; idempotent (safe no-op on the live DB)
+- Faithful snapshot including known bugs, which are fixed in 010
 
 ## Verification
 
