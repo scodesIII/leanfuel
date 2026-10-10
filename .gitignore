@@ -33,12 +33,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env
-.env*.local
-.env.development.local
-.env.test.local
-.env.production.local
+# local env files (commit .env.example with names only, no values)
+.env*
+!.env.example
 
 # typescript
 *.tsbuildinfo
@@ -103,11 +100,6 @@ coverage/
 *.cer
 *.der
 *.priv
-*credential*
-*secret*
-*password*
-*token*
-*auth*config*
 google-services.json
 GoogleService-Info.plist
 firebase*.json
@@ -116,10 +108,14 @@ firebase*.json
 !debug.keystore
 
 # Config that might contain secrets
+# Named files only: wildcards like *token* or *secret* would also hide
+# source files such as tokenBucket.ts
 config.private.*
 *.private.*
-*secrets*
-*credentials*
+secrets.json
+credentials.json
+service-account*.json
+.secrets/
 
 # Temporary files
 *.swp
@@ -133,3 +129,6 @@ TODO.md
 NOTES.md
 leanfuel_documentation.md
 CLAUDE.md
+
+
+.mcp.json
