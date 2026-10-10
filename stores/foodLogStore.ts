@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from "@/lib/superbase";
 import { MealType } from '@/types/food';
+import { dateToLocalString } from '@/lib/date';
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -167,7 +168,7 @@ interface FoodLogActions {
 type FoodLogStore = FoodLogState & FoodLogActions;
 
 const initialState: FoodLogState = {
-    selectedDate: new Date().toISOString().split('T')[0],
+    selectedDate: dateToLocalString(new Date()),
     days: {},
 };
 

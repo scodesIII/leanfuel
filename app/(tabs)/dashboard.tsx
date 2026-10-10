@@ -9,6 +9,7 @@ import { CalorieCard } from '@/components/dashboard/CalorieCard';
 import { MacroCard } from '@/components/dashboard/MacroCard';
 import { ActivityGrid } from '@/components/dashboard/ActivityGrid';
 import { useFoodLogStore } from '@/stores/foodLogStore';
+import { dateToLocalString } from '@/lib/date';
 import { MacroBar } from '@/components/dashboard/MacroBar';
 import { WaterTracker } from '@/components/dashboard/WaterTracker';
 
@@ -19,7 +20,7 @@ const Dashboard = () => {
     const { profile } = useUserStore();
     const user = useUserStore((state) => state.user);
     
-    const today = new Date().toISOString().split('T')[0];
+    const today = dateToLocalString(new Date());
 
     const { days, fetchSummaryForDate } = useFoodLogStore();
 
