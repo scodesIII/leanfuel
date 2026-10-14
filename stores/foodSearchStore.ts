@@ -51,26 +51,9 @@ export const useFoodSearchStore = create<FoodSearchState>((set, get) => ({
     const signal = currentAbortController.signal;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      // check if aborted during getUser()
-      if (signal.aborted) return;
-
-      const userId = user?.id;
-      const orFilter = userId
-        ? `is_public.eq.true,created_by.eq.${userId}`
-        : 'is_public.eq.true';
-
+      // Ranking, typo tolerance and visibility (RLS) are handled in the RPC
       const { data, error } = await supabase
-        .from('food_items')
-        .select(
-          'id, name, brand, calories, protein_g, carbs_g, fat_g, serving_size, serving_unit, is_verified'
-        )
-        .or(orFilter)
-        .ilike('name', `%${trimmed}%`)
-        .is('deleted_at', null)
-        .order('usage_count', { ascending: false })
-        .limit(20)
+        .rpc('search_food_items', { search_query: trimmed, limit_count: 20 })
         .abortSignal(signal);
 
       if (error) throw error;
